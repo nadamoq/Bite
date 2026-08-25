@@ -18,12 +18,12 @@ class CreateOrderAction
     public function execute(array $data, ?int $userId = null): Order
     {
         return DB::transaction(function () use ($data, $userId) {
-            // 1. Calculate total order price
+            // 1. حساب السعر الإجمالي للأوردر
             $totalPrice = collect($data['items'])->sum(function ($item) {
                 return (float) $item['quantity'] * (float) $item['unit_price'];
             });
 
-            // 2. Create the Order (OrderObserver automatically generates order_number and defaults)
+            // 2. إنشاء الطلب الأساسي
             $order = Order::create([
                 'user_id' => $userId ?? 1,
                 'order_type' => $data['order_type'] ?? 'delivery',
@@ -32,12 +32,17 @@ class CreateOrderAction
                 'status' => 'pending',
             ]);
 
-            // 3. Group and prepare order items (merge identical customizations)
+            // 3. تجميع العناصر مع مراعاة الـ Addons في المفتاح
             $groupedItems = [];
             foreach ($data['items'] as $item) {
-                $key = $item['menuitem_id'] . '_' . ($item['special_instructions'] ?? '');
+                $addonIds = isset($item['addon_ids']) ? (array) $item['addon_ids'] : [];
+                sort($addonIds); // ترتيب الأرقام لضمان التطابق عند التجميع
+
+                $key = $item['menuitem_id'] . '_' . ($item['special_instructions'] ?? '') . '_' . implode(',', $addonIds);
+
                 if (isset($groupedItems[$key])) {
                     $groupedItems[$key]['quantity'] += (int) $item['quantity'];
+                    $groupedItems[$key]['total_price'] += (float) $item['quantity'] * (float) $item['unit_price'];
                 } else {
                     $groupedItems[$key] = [
                         'menuitem_id' => (int) $item['menuitem_id'],
@@ -45,19 +50,25 @@ class CreateOrderAction
                         'unit_price' => (float) $item['unit_price'],
                         'total_price' => (float) $item['quantity'] * (float) $item['unit_price'],
                         'special_instructions' => $item['special_instructions'] ?? null,
+                        'addon_ids' => $addonIds,
                     ];
                 }
             }
 
-            $orderItems = [];
+            // 4. حفظ عناصر الطلب وربط الـ Addons في جدول الربط
             foreach ($groupedItems as $itemData) {
-                $orderItems[] = new OrderItem($itemData);
+                $addonIds = $itemData['addon_ids'];
+                unset($itemData['addon_ids']);
+
+                $orderItem = $order->items()->create($itemData);
+
+                // ربط الإضافات مع عنصر الطلب (إذا وجدت علاقة addons في موديل OrderItem)
+                if (!empty($addonIds) && method_exists($orderItem, 'addons')) {
+                    $orderItem->addons()->sync($addonIds);
+                }
             }
 
-            // 4. Save items associated with order
-            $order->items()->saveMany($orderItems);
-
-            return $order->load(['items.menuItem']);
+            return $order->load(['items.menuItem', 'items.addons']);
         });
     }
 }

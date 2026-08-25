@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}" x-data="craveApp()"
+<html lang="<?php echo e(app()->getLocale()); ?>" dir="<?php echo e(app()->getLocale() === 'ar' ? 'rtl' : 'ltr'); ?>" x-data="craveApp()"
     x-init="init()" :dir="locale === 'ar' ? 'rtl' : 'ltr'" :lang="locale" class="scroll-smooth">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="description" content="Crave Kitchen — {{ __('menu_page.hero.title2') }}. Order hot, delivered fast.">
-    <title>Crave Kitchen | {{ __('menu_page.hero.title2') }}</title>
+    <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
+    <meta name="description" content="Crave Kitchen — <?php echo e(__('menu_page.hero.title2')); ?>. Order hot, delivered fast.">
+    <title>Crave Kitchen | <?php echo e(__('menu_page.hero.title2')); ?></title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -322,12 +322,12 @@
     <!-- Global Server Injected State & Lang Data -->
     <script>
         window.__MENU_PAGE_TRANSLATIONS = {
-            ar: @json(trans('menu_page', [], 'ar')),
-            en: @json(trans('menu_page', [], 'en'))
+            ar: <?php echo json_encode(trans('menu_page', [], 'ar')) ?>,
+            en: <?php echo json_encode(trans('menu_page', [], 'en')) ?>
         };
-        window.__INITIAL_FEATURED_DISH = @json($featuredDish ?? null);
-        window.__INITIAL_SHOWCASE_DISHES = @json($showcaseDishes ?? []);
-        window.__INITIAL_LOCALE = '{{ app()->getLocale() }}';
+        window.__INITIAL_FEATURED_DISH = <?php echo json_encode($featuredDish ?? null, 15, 512) ?>;
+        window.__INITIAL_SHOWCASE_DISHES = <?php echo json_encode($showcaseDishes ?? [], 15, 512) ?>;
+        window.__INITIAL_LOCALE = '<?php echo e(app()->getLocale()); ?>';
     </script>
 </head>
 
@@ -1642,3 +1642,4 @@
 </body>
 
 </html>
+<?php /**PATH C:\wamp64\www\FillamentApp\resources\views/food/crave.blade.php ENDPATH**/ ?>
