@@ -45,6 +45,18 @@ class MenuItems extends Model
         ->with(['activeAddons']);
     }
 
+    public function addons(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Addon::class,
+            'menu_items_addons',
+            'menu_item_id',
+            'addon_id'
+        )
+        ->where('is_active', true)
+        ->with('category');
+    }
+
     public function orders(): BelongsToMany
     {
         return $this->belongsToMany(Order::class)->using(OrderItem::class);
@@ -144,6 +156,60 @@ class MenuItems extends Model
 
         $badge = $badgeType && isset($badgeStyles[$badgeType]) ? $badgeStyles[$badgeType] : null;
 
+        $addonCategoriesData = [];
+
+        if ($this->relationLoaded('addonCategories') && $this->addonCategories->isNotEmpty()) {
+            $addonCategoriesData = $this->addonCategories->map(function ($addonCat) {
+                $addonsCollection = $addonCat->relationLoaded('activeAddons')
+                    ? $addonCat->activeAddons
+                    : $addonCat->addons()->where('is_active', true)->get();
+
+                return [
+                    'id' => $addonCat->id,
+                    'name' => [
+                        'ar' => $addonCat->name,
+                        'en' => $addonCat->name,
+                    ],
+                    'is_multiple' => true,
+                    'addons' => $addonsCollection->map(function ($addon) {
+                        return [
+                            'id' => $addon->id,
+                            'name' => [
+                                'ar' => $addon->name,
+                                'en' => $addon->name,
+                            ],
+                            'price' => (float) $addon->price,
+                            'image' => $addon->image,
+                        ];
+                    })->values()->toArray(),
+                ];
+            })->values()->toArray();
+        } elseif ($this->relationLoaded('addons') && $this->addons->isNotEmpty()) {
+            $grouped = $this->addons->groupBy('addon_category_id');
+            foreach ($grouped as $catId => $addonsList) {
+                $categoryName = $addonsList->first()->category?->name ?? 'Addons';
+                $addonCategoriesData[] = [
+                    'id' => $catId,
+                    'name' => [
+                        'ar' => $categoryName,
+                        'en' => $categoryName,
+                    ],
+                    'is_multiple' => true,
+                    'addons' => $addonsList->map(function ($addon) {
+                        return [
+                            'id' => $addon->id,
+                            'name' => [
+                                'ar' => $addon->name,
+                                'en' => $addon->name,
+                            ],
+                            'price' => (float) $addon->price,
+                            'image' => $addon->image,
+                        ];
+                    })->values()->toArray(),
+                ];
+            }
+        }
+
         return [
             'id' => $this->id,
             'category' => $this->category?->slug ?? 'uncategorized',
@@ -163,31 +229,7 @@ class MenuItems extends Model
             'badge' => $badge ? ['ar' => $badge['ar'], 'en' => $badge['en']] : null,
             'badgeClass' => $badge ? $badge['class'] : null,
             'badges' => $badgeType ? [$badgeType] : [],
-            'addon_categories' => $this->relationLoaded('addonCategories')
-                ? $this->addonCategories->map(function ($addonCat) {
-                    return [
-                        'id' => $addonCat->id,
-                        'name' => [
-                            'ar' => $addonCat->name,
-                            'en' => $addonCat->name,
-                        ],
-                        'is_multiple' => (bool) $addonCat->is_multiple,
-                        'addons' => $addonCat->relationLoaded('activeAddons')
-                            ? $addonCat->activeAddons->map(function ($addon) {
-                                return [
-                                    'id' => $addon->id,
-                                    'name' => [
-                                        'ar' => $addon->name,
-                                        'en' => $addon->name,
-                                    ],
-                                    'price' => (float) $addon->price,
-                                    'image' => $addon->image,
-                                ];
-                            })->values()->toArray()
-                            : [],
-                    ];
-                })->values()->toArray()
-                : [],
+            'addon_categories' => $addonCategoriesData,
         ];
     }
 }

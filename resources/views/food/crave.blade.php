@@ -796,27 +796,21 @@
 
                             <!-- Addons Grouped -->
                             <div class="space-y-6 mb-6">
-                                <template
-                                    x-for="addonCategory in (selectedItem?.addon_categories || defaultAddonCategories)"
-                                    :key="addonCategory.id">
+                                <template x-for="addonCategory in (selectedItem?.addon_categories || defaultAddonCategories)" :key="addonCategory.id">
                                     <div class="space-y-3">
                                         <h4 class="text-sm font-semibold text-amber-warm/80 uppercase tracking-wide"
                                             x-text="addonCategory.name[locale] || addonCategory.name"></h4>
                                         <div class="space-y-2">
                                             <template x-for="addon in addonCategory.addons" :key="addon.id">
-                                                <label
-                                                    class="flex items-center justify-between p-3.5 rounded-xl bg-charcoal-900/60 border border-white/5 hover:border-amber-glow/20 cursor-pointer transition-all"
-                                                    :class="selectedAddons.includes(addon.id) ?
-                                                        'border-amber-glow/40 bg-amber-glow/5' : ''">
+                                                <label class="flex items-center justify-between p-3.5 rounded-xl bg-charcoal-900/60 border border-white/5 hover:border-amber-glow/20 cursor-pointer transition-all"
+                                                       :class="selectedAddons.includes(addon.id) ? 'border-amber-glow/40 bg-amber-glow/5' : ''">
                                                     <div class="flex items-center gap-3.5">
                                                         <img :src="addon.image"
                                                             :alt="addon.name[locale] || addon.name"
                                                             class="w-12 h-12 rounded-lg object-cover">
                                                         <div>
-                                                            <span class="font-semibold text-sm"
-                                                                x-text="addon.name[locale] || addon.name"></span>
-                                                            <span class="block text-amber-warm/70 text-xs mt-0.5"
-                                                                x-text="'+' + '$' + addon.price.toFixed(2)"></span>
+                                                            <span class="font-semibold text-sm" x-text="addon.name[locale] || addon.name"></span>
+                                                            <span class="block text-amber-warm/70 text-xs mt-0.5" x-text="'+' + '$' + addon.price.toFixed(2)"></span>
                                                         </div>
                                                     </div>
                                                     <input type="checkbox" :value="addon.id"
@@ -1048,6 +1042,19 @@
     </div>
 
     <!-- ═══════════════════════════════════════════════════════════════
+         SERVER STATE INJECTION
+    ═══════════════════════════════════════════════════════════════ -->
+    <script>
+        window.__MENU_PAGE_TRANSLATIONS = @json(__('menu_page'));
+        window.__INITIAL_FEATURED_DISH = @json($featuredDish ?? null);
+        window.__INITIAL_SHOWCASE_DISHES = @json($showcaseDishes ?? []);
+        window.__INITIAL_MENU_ITEMS = @json($menuItems ?? []);
+        window.__INITIAL_CATEGORIES = @json($categories ?? []);
+        window.__INITIAL_ADDON_CATEGORIES = @json($addonCategories ?? []);
+        window.__INITIAL_LOCALE = '{{ app()->getLocale() }}';
+    </script>
+
+    <!-- ═══════════════════════════════════════════════════════════════
          ALPINE.JS CLEAN APP CORE
     ═══════════════════════════════════════════════════════════════ -->
     <script>
@@ -1078,123 +1085,43 @@
                 // Translations injected from server lang files
                 translations: window.__MENU_PAGE_TRANSLATIONS || {},
 
-                // Featured Dishes from Controller Action
+                // Featured Dishes from Database Showcase Action
                 featuredDish: window.__INITIAL_FEATURED_DISH || null,
                 showcaseDishes: window.__INITIAL_SHOWCASE_DISHES || [],
 
                 // Categories
-                categories: [{
-                        id: 'all',
-                        label: {
-                            ar: 'الكل',
-                            en: 'All'
-                        }
-                    },
-                    {
-                        id: 'burgers',
-                        label: {
-                            ar: 'برجر',
-                            en: 'Burgers'
-                        }
-                    },
-                    {
-                        id: 'pizza',
-                        label: {
-                            ar: 'بيتزا',
-                            en: 'Pizza'
-                        }
-                    },
-                    {
-                        id: 'grills',
-                        label: {
-                            ar: 'مشويات',
-                            en: 'Grills'
-                        }
-                    },
-                    {
-                        id: 'sides',
-                        label: {
-                            ar: 'مقبلات وجوانب',
-                            en: 'Sides & Elevates'
-                        }
-                    },
+                categories: [
+                    { id: 'all', label: { ar: 'الكل', en: 'All' } },
+                    { id: 'burgers', label: { ar: 'برجر', en: 'Burgers' } },
+                    { id: 'pizza', label: { ar: 'بيتزا', en: 'Pizza' } },
+                    { id: 'grills', label: { ar: 'مشويات', en: 'Grills' } },
+                    { id: 'sides', label: { ar: 'مقبلات وجوانب', en: 'Sides & Elevates' } },
                 ],
 
                 // Fallback default addon categories
-                defaultAddonCategories: [{
+                defaultAddonCategories: [
+                    {
                         id: 1,
-                        name: {
-                            ar: 'صلصات فاخرة',
-                            en: 'Gourmet Sauces'
-                        },
-                        addons: [{
-                                id: 1,
-                                name: {
-                                    ar: 'صوص باربكيو مدخن',
-                                    en: 'Smoky BBQ Sauce'
-                                },
-                                price: 1.50,
-                                image: 'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=200&q=80'
-                            },
-                            {
-                                id: 2,
-                                name: {
-                                    ar: 'ثومية مع أعشاب برية',
-                                    en: 'Garlic Herb Aioli'
-                                },
-                                price: 1.50,
-                                image: 'https://images.unsplash.com/photo-1472476443507-c7a5948772fc?w=200&q=80'
-                            },
-                            {
-                                id: 3,
-                                name: {
-                                    ar: 'مايونيز الكمأة السوداء',
-                                    en: 'Black Truffle Mayo'
-                                },
-                                price: 2.50,
-                                image: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=200&q=80'
-                            },
+                        name: { ar: 'صلصات فاخرة', en: 'Gourmet Sauces' },
+                        addons: [
+                            { id: 1, name: { ar: 'صوص باربكيو مدخن', en: 'Smoky BBQ Sauce' }, price: 1.50, image: 'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=200&q=80' },
+                            { id: 2, name: { ar: 'ثومية مع أعشاب برية', en: 'Garlic Herb Aioli' }, price: 1.50, image: 'https://images.unsplash.com/photo-1472476443507-c7a5948772fc?w=200&q=80' },
+                            { id: 3, name: { ar: 'مايونيز الكمأة السوداء', en: 'Black Truffle Mayo' }, price: 2.50, image: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=200&q=80' },
                         ]
                     },
                     {
                         id: 2,
-                        name: {
-                            ar: 'إضافات مقرمشة',
-                            en: 'Premium Toppings'
-                        },
-                        addons: [{
-                                id: 4,
-                                name: {
-                                    ar: 'بيكون بقري مقرمش',
-                                    en: 'Crispy Beef Bacon'
-                                },
-                                price: 2.50,
-                                image: 'https://images.unsplash.com/photo-1528607929212-2636ec44253e?w=200&q=80'
-                            },
-                            {
-                                id: 5,
-                                name: {
-                                    ar: 'هالبينو مشوي حار',
-                                    en: 'Grilled Jalapeños'
-                                },
-                                price: 1.25,
-                                image: 'https://images.unsplash.com/photo-1568901346715-366b9e2d4f4d?w=200&q=80'
-                            },
-                            {
-                                id: 6,
-                                name: {
-                                    ar: 'بصل مكرمل متبل',
-                                    en: 'Caramelized Onions'
-                                },
-                                price: 1.50,
-                                image: 'https://images.unsplash.com/photo-1550547660-d9450f859349?w=200&q=80'
-                            },
+                        name: { ar: 'إضافات مقرمشة', en: 'Premium Toppings' },
+                        addons: [
+                            { id: 4, name: { ar: 'بيكون بقري مقرمش', en: 'Crispy Beef Bacon' }, price: 2.50, image: 'https://images.unsplash.com/photo-1528607929212-2636ec44253e?w=200&q=80' },
+                            { id: 5, name: { ar: 'هالبينو مشوي حار', en: 'Grilled Jalapeños' }, price: 1.25, image: 'https://images.unsplash.com/photo-1568901346715-366b9e2d4f4d?w=200&q=80' },
+                            { id: 6, name: { ar: 'بصل مكرمل متبل', en: 'Caramelized Onions' }, price: 1.50, image: 'https://images.unsplash.com/photo-1550547660-d9450f859349?w=200&q=80' },
                         ]
                     }
                 ],
 
-                // All Menu Items (Master list)
-                allMenuItems: [],
+                // Menu Items loaded directly from Database
+                allMenuItems: window.__INITIAL_MENU_ITEMS || [],
 
                 // Badge Styles
                 badgeStyles: {
@@ -1241,37 +1168,25 @@
                 },
 
                 init() {
-                    this.fetchMenuItems();
+                    if (!this.allMenuItems || this.allMenuItems.length === 0) {
+                        this.fetchMenuItems();
+                    }
                     this.initAnimations();
                 },
 
                 async fetchMenuItems() {
                     try {
-                        const response = await fetch('/menuitem', {
-                            headers: {
-                                'X-Requested-With': 'XMLHttpRequest',
-                                'Accept': 'application/json'
-                            }
-                        });
+                        const response = await fetch('/api/menuitems');
                         if (response.ok) {
                             const data = await response.json();
-                            if (data.items && data.items.length > 0) {
+                            if (data.items && Array.isArray(data.items)) {
                                 this.allMenuItems = data.items;
                                 if (data.categories && data.categories.length > 0) {
-                                    const cats = [{
-                                        id: 'all',
-                                        label: {
-                                            ar: 'الكل',
-                                            en: 'All'
-                                        }
-                                    }];
+                                    const cats = [{ id: 'all', label: { ar: 'الكل', en: 'All' } }];
                                     data.categories.forEach(c => {
                                         cats.push({
                                             id: c.slug || c.id,
-                                            label: {
-                                                ar: c.title || c.name,
-                                                en: c.title || c.name
-                                            }
+                                            label: { ar: c.title || c.name, en: c.title || c.name }
                                         });
                                     });
                                     this.categories = cats;
@@ -1284,48 +1199,48 @@
                     }
 
                     // Fallback items if API is offline
-                    // this.allMenuItems = [
-                    //     {
-                    //         id: 1,
-                    //         category: 'burgers',
-                    //         price: 18.99,
-                    //         image: 'https://images.unsplash.com/photo-1568901346715-366b9e2d4f4d?w=600&q=90',
-                    //         name: { ar: 'برجر الوحش المزدوج', en: 'Double Monster Burger' },
-                    //         desc: { ar: 'قطعتان من لحم الأنجوس الفاخر، صوص الشواء المدخن، جبنة شيدر مضاعفة تذوب بسخونة على الخبز الطري.', en: 'Two premium Angus beef patties, smoky BBQ sauce, double melted cheddar on a brioche bun.' },
-                    //         rating: '4.9',
-                    //         badges: ['bestseller', 'crispy-hot']
-                    //     },
-                    //     {
-                    //         id: 2,
-                    //         category: 'pizza',
-                    //         price: 16.50,
-                    //         image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=600&q=90',
-                    //         name: { ar: 'بيتزا مارغريتا نابوليتان', en: 'Neapolitan Margherita' },
-                    //         desc: { ar: 'صلصة طماطم سان مارزانو، جبنة موزاريلا فريش، ريحان إيطالي وزيت زيتون بكر ممتاز.', en: 'San Marzano tomato sauce, fresh mozzarella, Italian basil, and extra virgin olive oil.' },
-                    //         rating: '4.8',
-                    //         badges: ['extra-cheese']
-                    //     },
-                    //     {
-                    //         id: 3,
-                    //         category: 'grills',
-                    //         price: 24.00,
-                    //         image: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=600&q=90',
-                    //         name: { ar: 'ريش لحم ضأن مدخنة', en: 'Smoked Lamb Ribs' },
-                    //         desc: { ar: 'ريش لحم ضأن طرية مدخنة ببطء على خشب القيقب ومدهونة بتتبيلة الشيف الخاصة.', en: 'Slow-smoked tender lamb ribs glazed with chef’s signature spicy honey rub.' },
-                    //         rating: '4.9',
-                    //         badges: ['chef-special']
-                    //     },
-                    //     {
-                    //         id: 4,
-                    //         category: 'sides',
-                    //         price: 8.50,
-                    //         image: 'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=600&q=90',
-                    //         name: { ar: 'بطاطس ترافل مع البارميزان', en: 'Truffle Parmesan Fries' },
-                    //         desc: { ar: 'بطاطس مقرمشة متبلة بزيت الكمأة الفاخر وجبنة البارميزان المعتقة مع صوص الثومية.', en: 'Crispy fries tossed with luxury truffle oil, aged parmesan, and garlic herb aioli.' },
-                    //         rating: '4.7',
-                    //         badges: ['crispy-hot']
-                    //     }
-                    // ];
+                    this.allMenuItems = [
+                        {
+                            id: 1,
+                            category: 'burgers',
+                            price: 18.99,
+                            image: 'https://images.unsplash.com/photo-1568901346715-366b9e2d4f4d?w=600&q=90',
+                            name: { ar: 'برجر الوحش المزدوج', en: 'Double Monster Burger' },
+                            desc: { ar: 'قطعتان من لحم الأنجوس الفاخر، صوص الشواء المدخن، جبنة شيدر مضاعفة تذوب بسخونة على الخبز الطري.', en: 'Two premium Angus beef patties, smoky BBQ sauce, double melted cheddar on a brioche bun.' },
+                            rating: '4.9',
+                            badges: ['bestseller', 'crispy-hot']
+                        },
+                        {
+                            id: 2,
+                            category: 'pizza',
+                            price: 16.50,
+                            image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=600&q=90',
+                            name: { ar: 'بيتزا مارغريتا نابوليتان', en: 'Neapolitan Margherita' },
+                            desc: { ar: 'صلصة طماطم سان مارزانو، جبنة موزاريلا فريش، ريحان إيطالي وزيت زيتون بكر ممتاز.', en: 'San Marzano tomato sauce, fresh mozzarella, Italian basil, and extra virgin olive oil.' },
+                            rating: '4.8',
+                            badges: ['extra-cheese']
+                        },
+                        {
+                            id: 3,
+                            category: 'grills',
+                            price: 24.00,
+                            image: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=600&q=90',
+                            name: { ar: 'ريش لحم ضأن مدخنة', en: 'Smoked Lamb Ribs' },
+                            desc: { ar: 'ريش لحم ضأن طرية مدخنة ببطء على خشب القيقب ومدهونة بتتبيلة الشيف الخاصة.', en: 'Slow-smoked tender lamb ribs glazed with chef’s signature spicy honey rub.' },
+                            rating: '4.9',
+                            badges: ['chef-special']
+                        },
+                        {
+                            id: 4,
+                            category: 'sides',
+                            price: 8.50,
+                            image: 'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=600&q=90',
+                            name: { ar: 'بطاطس ترافل مع البارميزان', en: 'Truffle Parmesan Fries' },
+                            desc: { ar: 'بطاطس مقرمشة متبلة بزيت الكمأة الفاخر وجبنة البارميزان المعتقة مع صوص الثومية.', en: 'Crispy fries tossed with luxury truffle oil, aged parmesan, and garlic herb aioli.' },
+                            rating: '4.7',
+                            badges: ['crispy-hot']
+                        }
+                    ];
                 },
 
                 get filteredMenu() {
@@ -1378,12 +1293,14 @@
 
                 get modalTotal() {
                     if (!this.selectedItem) return 0;
-                    let total = this.selectedItem.price;
-                    const cats = this.selectedItem.addon_categories || this.defaultAddonCategories;
+                    let total = parseFloat(this.selectedItem.price) || 0;
+                    const cats = (this.selectedItem.addon_categories && this.selectedItem.addon_categories.length > 0)
+                        ? this.selectedItem.addon_categories
+                        : this.defaultAddonCategories;
                     cats.forEach(c => {
                         (c.addons || []).forEach(a => {
                             if (this.selectedAddons.includes(a.id)) {
-                                total += a.price;
+                                total += parseFloat(a.price) || 0;
                             }
                         });
                     });
@@ -1393,13 +1310,15 @@
 
                 addCustomizedToCart() {
                     if (!this.selectedItem) return;
-                    let unitPrice = this.selectedItem.price;
+                    let unitPrice = parseFloat(this.selectedItem.price) || 0;
                     let customNames = [];
-                    const cats = this.selectedItem.addon_categories || this.defaultAddonCategories;
+                    const cats = (this.selectedItem.addon_categories && this.selectedItem.addon_categories.length > 0)
+                        ? this.selectedItem.addon_categories
+                        : this.defaultAddonCategories;
                     cats.forEach(c => {
                         (c.addons || []).forEach(a => {
                             if (this.selectedAddons.includes(a.id)) {
-                                unitPrice += a.price;
+                                unitPrice += parseFloat(a.price) || 0;
                                 customNames.push(a.name[this.locale] || a.name);
                             }
                         });
@@ -1515,7 +1434,7 @@
 
                     try {
                         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
-                        const res = await fetch('order', {
+                        const res = await fetch('/api/orders', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
