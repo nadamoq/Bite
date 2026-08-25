@@ -20,7 +20,7 @@ class GetMenuItemsAction
         $menuitems = MenuItems::active()
             ->search($search)
             ->byCategory($categoryId)
-            ->with(['category', 'addonCategories.activeAddons'])
+            ->with(['category', 'addonCategories.activeAddons', 'addons.category'])
             ->orderBy('category_id')
             ->orderBy('name')
             ->get()
