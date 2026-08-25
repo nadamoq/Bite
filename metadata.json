@@ -1,0 +1,6 @@
+{
+  "name": "Crave Kitchen",
+  "description": "Crave Kitchen restaurant website and ordering platform with an interactive menu, dish customizer, cart, discount code, and Arabic/English language support.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

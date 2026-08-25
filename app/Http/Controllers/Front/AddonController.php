@@ -1,39 +1,20 @@
 <?php
 
-namespace App\Http\Controllers\front;
+namespace App\Http\Controllers\Front;
 
+use App\Actions\Addon\GetAddonsAction;
 use App\Http\Controllers\Controller;
-use App\Models\Addon;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class AddonController extends Controller
 {
-    //
-    public function index()
+    /**
+     * Fetch all active add-ons grouped/formatted for frontend.
+     */
+    public function index(GetAddonsAction $addonsAction): JsonResponse
     {
-        $addons = Addon::where('is_active', true)
-            ->with('activeCategory')
-            ->get()
-            ->map(function ($addon) {
-                return [
-                    'id' => $addon->id,
-                    'name' => [
-                        'ar' => $addon->name,
-                        'en' => $addon->name
-                    ],
-                    'price' => (float) $addon->price,
-                    'image' => $addon->image,
-                    'category_id' => $addon->addon_category_id,
-                    'category' => $addon->category ? [
-                        'id' => $addon->category->id,
-                        'name' => $addon->category->name,
-                    ] : null
-                ];
-            });
-        
-        return response()->json([
-            'addons' => $addons,
-            'total' => count($addons)
-        ]);
+        $result = $addonsAction->execute();
+
+        return response()->json($result);
     }
 }
