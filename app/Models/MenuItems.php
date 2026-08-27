@@ -8,18 +8,26 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Concerns\ProvidesTranslationMap;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Spatie\Translatable\HasTranslations;
 
 class MenuItems extends Model
 {
+    use HasTranslations;
+    use ProvidesTranslationMap;
+
     protected $guarded = [];
+
+    public array $translatable = ['name', 'description'];
 
     protected $casts = [
         'price' => 'float',
         'is_active' => 'boolean',
     ];
 
+  
     /**
      * Relationships
      */
@@ -93,8 +101,10 @@ class MenuItems extends Model
         }
 
         return $query->where(function ($q) use ($search) {
-            $q->where('name', 'like', "%{$search}%")
-              ->orWhere('description', 'like', "%{$search}%");
+            $q->where('name->ar', 'like', "%{$search}%")
+                ->orWhere('name->en', 'like', "%{$search}%")
+                ->orWhere('description->ar', 'like', "%{$search}%")
+                ->orWhere('description->en', 'like', "%{$search}%");
         });
     }
 
@@ -141,6 +151,7 @@ class MenuItems extends Model
             get: fn () => '$' . number_format($this->price, 2)
         );
     }
+    
 
     /**
      * Format Model into structured frontend schema

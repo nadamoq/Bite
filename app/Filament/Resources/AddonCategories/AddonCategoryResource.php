@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\AddonCategories;
 
+use App\Filament\Concerns\HydratesTranslatableAttributes;
 use App\Filament\Resources\AddonCategories\Pages\CreateAddonCategory;
 use App\Filament\Resources\AddonCategories\Pages\EditAddonCategory;
 use App\Filament\Resources\AddonCategories\Pages\ListAddonCategories;
@@ -17,6 +18,7 @@ use Filament\Tables\Table;
 
 class AddonCategoryResource extends Resource
 {
+    use HydratesTranslatableAttributes;
     protected static ?string $model = AddonCategory::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;

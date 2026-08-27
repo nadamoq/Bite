@@ -178,7 +178,7 @@ class OrdersForm
                                     ->schema([
                                         Select::make('menuitem_id')
                                             ->label(__("order.menuitem_id"))
-                                            ->options(MenuItems::pluck('name', 'id'))
+                                            ->options(MenuItems::pluck('name', 'id')->where('is_active',true))
                                             ->searchable()
                                             ->preload()
                                             ->live()

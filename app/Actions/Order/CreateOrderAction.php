@@ -56,17 +56,22 @@ class CreateOrderAction
             }
 
             // 4. حفظ عناصر الطلب وربط الـ Addons في جدول الربط
-            foreach ($groupedItems as $itemData) {
-                $addonIds = $itemData['addon_ids'];
-                unset($itemData['addon_ids']);
+           foreach ($groupedItems as $itemData) {
+    $addonIds = $itemData['addon_ids'];
 
-                $orderItem = $order->items()->create($itemData);
+    // إنشاء العنصر بتمرير الحقول المطلوبة لجدول order_items حصراً
+    $orderItem = $order->items()->create([
+        'menuitem_id'          => $itemData['menuitem_id'],
+        'quantity'             => $itemData['quantity'],
+        'unit_price'           => $itemData['unit_price'],
+        'special_instructions' => $itemData['special_instructions'],
+    ]);
 
-                // ربط الإضافات مع عنصر الطلب (إذا وجدت علاقة addons في موديل OrderItem)
-                if (!empty($addonIds) && method_exists($orderItem, 'addons')) {
-                    $orderItem->addons()->sync($addonIds);
-                }
-            }
+    // ربط الإضافات مع عنصر الطلب
+    if (!empty($addonIds) && method_exists($orderItem, 'addons')) {
+        $orderItem->addons()->sync($addonIds);
+    }
+}
 
             return $order->load(['items.menuItem', 'items.addons']);
         });

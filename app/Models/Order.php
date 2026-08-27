@@ -33,6 +33,15 @@ class Order extends Model
         return $this->belongsTo(User::class);
     }
 
+    public static function booted()
+    {
+        static::creating(function (Order $order) {
+            if (empty($order->order_number)) {
+                $order->order_number = 'ORD-' . strtoupper(str()->random(6));
+            }
+        });
+    }
+
     public function scopePending(Builder $query): Builder
     {
         return $query->where('status', 'pending');

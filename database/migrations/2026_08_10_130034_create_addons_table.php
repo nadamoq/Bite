@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('addons', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->text('description')->nullable();
+            $table->json('name');
+            $table->json('description')->nullable();
             $table->decimal('price', 8, 2)->default(0.00);
             $table->foreignId('addon_category_id')->constrained()->onDelete('cascade');
             $table->boolean('is_active')->default(true);

@@ -21,7 +21,7 @@ class AddonsRelationManager extends RelationManager
 {
     protected static string $relationship = 'addons';
 
-      protected static ?string $relatedResource = AddonsResource::class;
+    protected static ?string $relatedResource = AddonsResource::class;
 
    
     public static function getRelationshipName(): string

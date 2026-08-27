@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('addon_categories', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->text('description')->nullable();
+            $table->json('name');
+            $table->json('description')->nullable();
             $table->string('image')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();

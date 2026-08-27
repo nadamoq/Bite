@@ -7,7 +7,6 @@ use App\Filament\Resources\MenuItems\Pages\EditMenuItems;
 use App\Filament\Resources\MenuItems\Pages\ListMenuItems;
 use App\Filament\Resources\MenuItems\Pages\ViewMenuItems;
 use App\Filament\Resources\MenuItems\RelationManagers\AddonCategoriesRelationManager;
-use App\Filament\Resources\MenuItems\RelationManagers\MenuItemsResourceRelationManager;
 use App\Filament\Resources\MenuItems\Schemas\MenuItemsForm;
 use App\Filament\Resources\MenuItems\Schemas\MenuItemsInfolist;
 use App\Filament\Resources\MenuItems\Tables\MenuItemsTable;
@@ -17,11 +16,12 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-
+use Filament\Resources\Concerns\Translatable;
 class MenuItemsResource extends Resource
 {
+   
     protected static ?string $model = MenuItems::class;
-
+    
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-book-open';
     protected static string|BackedEnum|null $activeNavigationIcon = 'heroicon-s-book-open';
 

@@ -6,6 +6,7 @@ use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Schema;
 
 class CategoryForm
@@ -15,25 +16,44 @@ class CategoryForm
         return $schema
             ->components([
                 //
-                TextInput::make('title')
-                    ->label(__('category.title'))
+                Tabs::make('Translations')
+    ->tabs([
+        Tabs\Tab::make(__('العربية'))
+            ->schema([
+                TextInput::make('title.ar')
+                    ->label(__('category.title') . ' (بالعربي)')
                     ->required()
-                    ->unique()
                     ->maxLength(255),
-                // TextInput::make('slug')
-                //     ->label('Slug')
-                //     ->required()
-                //     ->unique()
-                //     ->maxLength(255),
-                Textarea::make('description')
-                    ->label(__('category.description'))
+                Textarea::make('description.ar')
+                    ->label(__('category.description') . ' (بالعربي)')
                     ->maxLength(65535),
-                FileUpload::make('image')
-                    ->label(__('category.image'))
-                    ->image()
-                    ->maxSize(1024),
-                Checkbox::make('is_active')
-                    ->label(__('category.is_active')),
+            ]),
+        Tabs\Tab::make(__('English'))
+            ->schema([
+                TextInput::make('title.en')
+                    ->label(__('category.title') . ' (EN)')
+                    ->required()
+                    ->maxLength(255),
+                Textarea::make('description.en')
+                    ->label(__('category.description') . ' (EN)')
+                    ->maxLength(65535),
+            ]),
+    ])
+    ->columnSpanFull(),
+
+// TextInput::make('slug')
+//     ->label('Slug')
+//     ->required()
+//     ->unique()
+//     ->maxLength(255),
+
+FileUpload::make('image')
+    ->label(__('category.image'))
+    ->image()
+    ->maxSize(1024),
+
+Checkbox::make('is_active')
+    ->label(__('category.is_active')),
             ]);
     }
 }

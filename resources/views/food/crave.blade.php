@@ -326,6 +326,8 @@
             en: @json(trans('menu_page', [], 'en'))
         };
         window.__INITIAL_FEATURED_DISH = @json($featuredDish ?? null);
+        window.__INITIAL_FAMILY_DISH = @json($familyDish ?? null);
+        window.__INITIAL_SPICY_DISH = @json($spicyDish ?? null);
         window.__INITIAL_SHOWCASE_DISHES = @json($showcaseDishes ?? []);
         window.__INITIAL_LOCALE = '{{ app()->getLocale() }}';
     </script>
@@ -462,17 +464,7 @@
                                 </svg>
                             </span>
                         </button>
-                        <div class="flex items-center gap-3 text-white/50 text-sm">
-                            <div class="flex -space-x-2 rtl:space-x-reverse">
-                                <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop"
-                                    class="w-9 h-9 rounded-full border-2 border-charcoal-950" alt="">
-                                <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop"
-                                    class="w-9 h-9 rounded-full border-2 border-charcoal-950" alt="">
-                                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop"
-                                    class="w-9 h-9 rounded-full border-2 border-charcoal-950" alt="">
-                            </div>
-                            <span x-text="t('hero.social')"></span>
-                        </div>
+                        
                     </div>
                 </div>
 
@@ -532,100 +524,63 @@
                     <p class="text-white/50 max-w-2xl mx-auto text-lg" x-text="t('showcase.subtitle')"></p>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-                    <!-- Featured Dish Spotlight -->
-                    <div class="lg:col-span-5" x-show="featuredDish">
-                        <div class="text-start mb-6">
-                            <span
-                                class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-crimson-cta/30 to-amber-fire/20 border border-amber-glow/20 text-amber-warm text-xs font-black uppercase tracking-wider animate-pulse">
-                                <span>🏆</span> <span x-text="t('showcase.bestseller_badge')"></span>
-                            </span>
-                        </div>
-                        <article
-                            class="group relative rounded-3xl overflow-hidden shadow-card-float border border-amber-glow/30 hover:border-amber-glow/60 transition-all duration-500 hover:-translate-y-2 cursor-pointer"
-                            @click="openCustomizer(featuredDish)">
-                            <div class="aspect-[4/5] overflow-hidden">
-                                <img :src="featuredDish ? featuredDish.image : ''"
-                                    :alt="featuredDish ? (featuredDish.name[locale] || featuredDish.name) : ''"
-                                    class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 sizzle-effect">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10 items-start"
+                    x-show="spotlightDishes.length">
+                    <template x-for="dish in spotlightDishes" :key="'spot-' + (dish.spotlightType || dish.id)">
+                        <div>
+                            <div class="text-start mb-6">
+                                <span
+                                    class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-crimson-cta/30 to-amber-fire/20 border border-amber-glow/20 text-amber-warm text-xs font-black uppercase tracking-wider animate-pulse">
+                                    <span x-text="dish.spotlight?.emoji || '🏆'"></span>
+                                    <span
+                                        x-text="dish.spotlight?.label ? (dish.spotlight.label[locale] || dish.spotlight.label) : t(dish.spotlight?.labelKey || 'showcase.bestseller_badge')"></span>
+                                </span>
                             </div>
-                            <div
-                                class="absolute inset-0 bg-gradient-to-t from-charcoal-950 via-charcoal-950/40 to-transparent">
-                            </div>
-
-                            <div
-                                class="absolute top-1/3 start-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <div
-                                    class="steam-particle w-16 h-16 rounded-full bg-white/10 blur-xl animate-steam-rise">
-                                </div>
-                            </div>
-
-                            <div class="absolute bottom-0 inset-x-0 p-8">
-                                <h3 class="font-display text-3xl font-black mb-2 text-amber-warm"
-                                    x-text="featuredDish ? (featuredDish.name[locale] || featuredDish.name) : ''"></h3>
-                                <p class="text-white/70 text-base mb-4 line-clamp-3"
-                                    x-text="featuredDish ? (featuredDish.desc ? featuredDish.desc[locale] : featuredDish.description) : ''">
-                                </p>
-                                <div class="flex items-center justify-between">
-                                    <span class="text-white font-black text-2xl"
-                                        x-text="'$' + (featuredDish ? featuredDish.price.toFixed(2) : '0.00')"></span>
-                                    <button
-                                        class="btn-ripple w-12 h-12 rounded-full bg-amber-glow text-charcoal-950 flex items-center justify-center hover:bg-amber-warm transition-colors shadow-glow-amber cursor-pointer"
-                                        @click.stop="quickAdd(featuredDish, $event)">
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                                d="M12 4v16m8-8H4" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                        </article>
-                    </div>
-
-                    <!-- Category Recommendations -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6"
-                        :class="featuredDish ? 'lg:col-span-7' : 'lg:col-span-12 sm:grid-cols-2 md:grid-cols-3'">
-                        <template x-for="(dish, index) in showcaseDishes" :key="dish.id">
                             <article
-                                class="showcase-card group relative rounded-3xl overflow-hidden shadow-card-float border border-white/5 hover:border-amber-glow/30 transition-all duration-500 hover:-translate-y-2 cursor-pointer"
+                                class="group relative rounded-3xl overflow-hidden shadow-card-float border border-amber-glow/30 hover:border-amber-glow/60 transition-all duration-500 hover:-translate-y-2 cursor-pointer"
                                 @click="openCustomizer(dish)">
-                                <div class="aspect-square overflow-hidden">
-                                    <img :src="dish.image" :alt="dish.name[locale] || dish.name"
+                                <div class="aspect-[4/5] overflow-hidden">
+                                    <img :src="dish.image || ''"
+                                        :alt="dish.name[locale] || dish.name"
                                         class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 sizzle-effect">
                                 </div>
                                 <div
-                                    class="absolute inset-0 bg-gradient-to-t from-charcoal-950 via-charcoal-950/20 to-transparent">
+                                    class="absolute inset-0 bg-gradient-to-t from-charcoal-950 via-charcoal-950/40 to-transparent">
                                 </div>
 
-                                <span
-                                    class="absolute top-4 start-4 px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider"
-                                    :class="dish.badgeClass || 'bg-amber-glow/30 text-amber-warm backdrop-blur-md'"
-                                    x-text="dish.badge ? (dish.badge[locale] || dish.badge) : t('badges.' + (dish.badges?.[0] || 'bestseller'))"></span>
+                                <div
+                                    class="absolute top-1/3 start-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <div
+                                        class="steam-particle w-16 h-16 rounded-full bg-white/10 blur-xl animate-steam-rise">
+                                    </div>
+                                </div>
 
-                                <div class="absolute bottom-0 inset-x-0 p-5">
-                                    <h3 class="font-display text-xl font-bold mb-1"
+                                <div class="absolute bottom-0 inset-x-0 p-8">
+                                    <h3 class="font-display text-3xl font-black mb-2 text-amber-warm"
                                         x-text="dish.name[locale] || dish.name"></h3>
-                                    <p class="text-white/50 text-xs mb-3 line-clamp-2"
-                                        x-text="dish.desc ? dish.desc[locale] : dish.description"></p>
+                                    <p class="text-white/70 text-base mb-4 line-clamp-3"
+                                        x-text="dish.desc ? dish.desc[locale] : dish.description">
+                                    </p>
                                     <div class="flex items-center justify-between">
-                                        <span class="text-amber-warm font-bold text-base"
-                                            x-text="'$' + dish.price.toFixed(2)"></span>
+                                        <span class="text-white font-black text-2xl"
+                                            x-text="'$' + (dish.price ? dish.price.toFixed(2) : '0.00')"></span>
                                         <button
-                                            class="btn-ripple w-9 h-9 rounded-full bg-crimson-cta/90 flex items-center justify-center hover:bg-crimson-cta transition-colors shadow-glow-red cursor-pointer"
+                                            class="btn-ripple w-12 h-12 rounded-full bg-amber-glow text-charcoal-950 flex items-center justify-center hover:bg-amber-warm transition-colors shadow-glow-amber cursor-pointer"
                                             @click.stop="quickAdd(dish, $event)">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                            <svg class="w-6 h-6" fill="none" stroke="currentColor"
                                                 viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                    stroke-width="2.5" d="M12 4v16m8-8H4" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                                    d="M12 4v16m8-8H4" />
                                             </svg>
                                         </button>
                                     </div>
                                 </div>
                             </article>
-                        </template>
-                    </div>
+                        </div>
+                    </template>
                 </div>
+
+                
             </div>
         </section>
 
@@ -1045,13 +1000,18 @@
          SERVER STATE INJECTION
     ═══════════════════════════════════════════════════════════════ -->
     <script>
-        window.__MENU_PAGE_TRANSLATIONS = @json(__('menu_page'));
+       window.__MENU_PAGE_TRANSLATIONS = {
+        ar: @json(__('menu_page', [], 'ar')),
+        en: @json(__('menu_page', [], 'en'))
+    };
         window.__INITIAL_FEATURED_DISH = @json($featuredDish ?? null);
+        window.__INITIAL_FAMILY_DISH = @json($familyDish ?? null);
+        window.__INITIAL_SPICY_DISH = @json($spicyDish ?? null);
         window.__INITIAL_SHOWCASE_DISHES = @json($showcaseDishes ?? []);
         window.__INITIAL_MENU_ITEMS = @json($menuItems ?? []);
         window.__INITIAL_CATEGORIES = @json($categories ?? []);
         window.__INITIAL_ADDON_CATEGORIES = @json($addonCategories ?? []);
-        window.__INITIAL_LOCALE = '{{ app()->getLocale() }}';
+        window.__INITIAL_LOCALE = window.__INITIAL_LOCALE || document.documentElement.lang || 'ar';
     </script>
 
     <!-- ═══════════════════════════════════════════════════════════════
@@ -1087,16 +1047,69 @@
 
                 // Featured Dishes from Database Showcase Action
                 featuredDish: window.__INITIAL_FEATURED_DISH || null,
+                familyDish: window.__INITIAL_FAMILY_DISH || null,
+                spicyDish: window.__INITIAL_SPICY_DISH || null,
+                spotlightDishes: [
+                    window.__INITIAL_FEATURED_DISH,
+                    window.__INITIAL_FAMILY_DISH,
+                    window.__INITIAL_SPICY_DISH,
+                ].filter(Boolean),
                 showcaseDishes: window.__INITIAL_SHOWCASE_DISHES || [],
 
-                // Categories
-                categories: [
-                    { id: 'all', label: { ar: 'الكل', en: 'All' } },
-                    { id: 'burgers', label: { ar: 'برجر', en: 'Burgers' } },
-                    { id: 'pizza', label: { ar: 'بيتزا', en: 'Pizza' } },
-                    { id: 'grills', label: { ar: 'مشويات', en: 'Grills' } },
-                    { id: 'sides', label: { ar: 'مقبلات وجوانب', en: 'Sides & Elevates' } },
-                ],
+           categories: (window.__INITIAL_CATEGORIES && window.__INITIAL_CATEGORIES.length > 0)
+            ? [
+                { id: 'all', label: { ar: 'الكل', en: 'All' } },
+                ...window.__INITIAL_CATEGORIES.map(c => ({
+                    id: c.slug || c.id,
+                    label: { 
+                        ar: c.title_ar || c.title || c.name, 
+                        en: c.title_en || c.title || c.name 
+                    }
+                }))
+              ]
+            : [
+                { id: 'all', label: { ar: 'الكل', en: 'All' } },
+                { id: 'burgers', label: { ar: 'برجر', en: 'Burgers' } },
+                { id: 'pizza', label: { ar: 'بيتزا', en: 'Pizza' } },
+                { id: 'grills', label: { ar: 'مشويات', en: 'Grills' } },
+                { id: 'sides', label: { ar: 'مقبلات وجوانب', en: 'Sides & Elevates' } },
+            ],
+
+        async fetchMenuItems() {
+            try {
+                const response = await fetch('menuitems');
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    
+                    const items = data.items || data.data || (Array.isArray(data) ? data : null);
+                    
+                    if (items && Array.isArray(items)) {
+                        this.allMenuItems = items;
+                        
+                        const incomingCategories = data.categories || [];
+                        if (incomingCategories.length > 0) {
+                            const cats = [{ id: 'all', label: { ar: 'الكل', en: 'All' } }];
+                            incomingCategories.forEach(c => {
+                                cats.push({
+                                    id: c.slug || c.id,
+                                    label: { 
+                                        ar: typeof c.name === 'object' ? (c.name.ar || c.name.en) : (c.title || c.name), 
+                                        en: typeof c.name === 'object' ? (c.name.en || c.name.ar) : (c.title || c.name) 
+                                    }
+                                });
+                            });
+                            this.categories = cats;
+                        }
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.log('API fallback initialized', e);
+            }
+
+            // Fallback items ...
+        },
 
                 // Fallback default addon categories
                 defaultAddonCategories: [
@@ -1174,74 +1187,6 @@
                     this.initAnimations();
                 },
 
-                async fetchMenuItems() {
-                    try {
-                        const response = await fetch('/api/menuitems');
-                        if (response.ok) {
-                            const data = await response.json();
-                            if (data.items && Array.isArray(data.items)) {
-                                this.allMenuItems = data.items;
-                                if (data.categories && data.categories.length > 0) {
-                                    const cats = [{ id: 'all', label: { ar: 'الكل', en: 'All' } }];
-                                    data.categories.forEach(c => {
-                                        cats.push({
-                                            id: c.slug || c.id,
-                                            label: { ar: c.title || c.name, en: c.title || c.name }
-                                        });
-                                    });
-                                    this.categories = cats;
-                                }
-                                return;
-                            }
-                        }
-                    } catch (e) {
-                        console.log('API fallback initialized');
-                    }
-
-                    // Fallback items if API is offline
-                    this.allMenuItems = [
-                        {
-                            id: 1,
-                            category: 'burgers',
-                            price: 18.99,
-                            image: 'https://images.unsplash.com/photo-1568901346715-366b9e2d4f4d?w=600&q=90',
-                            name: { ar: 'برجر الوحش المزدوج', en: 'Double Monster Burger' },
-                            desc: { ar: 'قطعتان من لحم الأنجوس الفاخر، صوص الشواء المدخن، جبنة شيدر مضاعفة تذوب بسخونة على الخبز الطري.', en: 'Two premium Angus beef patties, smoky BBQ sauce, double melted cheddar on a brioche bun.' },
-                            rating: '4.9',
-                            badges: ['bestseller', 'crispy-hot']
-                        },
-                        {
-                            id: 2,
-                            category: 'pizza',
-                            price: 16.50,
-                            image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=600&q=90',
-                            name: { ar: 'بيتزا مارغريتا نابوليتان', en: 'Neapolitan Margherita' },
-                            desc: { ar: 'صلصة طماطم سان مارزانو، جبنة موزاريلا فريش، ريحان إيطالي وزيت زيتون بكر ممتاز.', en: 'San Marzano tomato sauce, fresh mozzarella, Italian basil, and extra virgin olive oil.' },
-                            rating: '4.8',
-                            badges: ['extra-cheese']
-                        },
-                        {
-                            id: 3,
-                            category: 'grills',
-                            price: 24.00,
-                            image: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=600&q=90',
-                            name: { ar: 'ريش لحم ضأن مدخنة', en: 'Smoked Lamb Ribs' },
-                            desc: { ar: 'ريش لحم ضأن طرية مدخنة ببطء على خشب القيقب ومدهونة بتتبيلة الشيف الخاصة.', en: 'Slow-smoked tender lamb ribs glazed with chef’s signature spicy honey rub.' },
-                            rating: '4.9',
-                            badges: ['chef-special']
-                        },
-                        {
-                            id: 4,
-                            category: 'sides',
-                            price: 8.50,
-                            image: 'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=600&q=90',
-                            name: { ar: 'بطاطس ترافل مع البارميزان', en: 'Truffle Parmesan Fries' },
-                            desc: { ar: 'بطاطس مقرمشة متبلة بزيت الكمأة الفاخر وجبنة البارميزان المعتقة مع صوص الثومية.', en: 'Crispy fries tossed with luxury truffle oil, aged parmesan, and garlic herb aioli.' },
-                            rating: '4.7',
-                            badges: ['crispy-hot']
-                        }
-                    ];
-                },
 
                 get filteredMenu() {
                     let items = this.allMenuItems;
@@ -1434,11 +1379,12 @@
 
                     try {
                         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
-                        const res = await fetch('/api/orders', {
+                        const res = await fetch('order', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
                                 'Accept': 'application/json',
+                                
                                 ...(csrfToken ? {
                                     'X-CSRF-TOKEN': csrfToken
                                 } : {})

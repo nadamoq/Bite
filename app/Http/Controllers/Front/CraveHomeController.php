@@ -32,6 +32,8 @@ class CraveHomeController extends Controller
 
         return view('food.crave', [
             'featuredDish' => $showcaseData['featuredDish'],
+            'familyDish' => $showcaseData['familyDish'],
+            'spicyDish' => $showcaseData['spicyDish'],
             'showcaseDishes' => $showcaseData['showcaseDishes'],
             'menuItems' => $menuData['items'],
             'categories' => $categories,

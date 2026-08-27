@@ -6,9 +6,11 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Translatable\HasTranslations;
 
 class AddonCategory extends Model
 {
+    use HasTranslations;
     protected $fillable = [
         'name',
         'description',
@@ -16,9 +18,12 @@ class AddonCategory extends Model
         'is_multiple',
         'is_active',
     ];
+ 
+
+    public array $translatable = ['name', 'description'];
 
     protected $casts = [
-        'is_multiple' => 'boolean',
+      
         'is_active' => 'boolean',
     ];
 

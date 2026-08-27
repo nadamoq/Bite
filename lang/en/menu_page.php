@@ -22,6 +22,8 @@ return [
         'title' => 'Dishes That Captivate the Senses',
         'subtitle' => 'Every dish is crafted with love, perfectly seasoned, and served smoking hot.',
         'bestseller_badge' => 'Overall #1 Bestseller',
+        'family_badge' => 'Serves 5',
+        'spicy_badge' => '🌶️ Spicy Challenge',
     ],
     'menu' => [
         'label' => 'Explore',

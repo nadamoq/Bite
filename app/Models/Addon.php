@@ -8,9 +8,15 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Spatie\Translatable\HasTranslations;
 
 class Addon extends Model
 {
+    use HasTranslations;
+
+    public array $translatable = ['name', 'description'];
+
+  
     protected $fillable = [
         'name',
         'description',

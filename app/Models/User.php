@@ -35,14 +35,14 @@ class User extends Authenticatable
     }
     public function isAdmin()
     {
-        return $this->role = RoleEnum::Admin;
+        return $this->role == RoleEnum::Admin;
     }
     public function isResturantManager()
     {
-        return $this->role = RoleEnum::ResturantManager;
+        return $this->role == RoleEnum::ResturantManager;
     }
     public function isUser()
     {
-        return $this->role = RoleEnum::User;
+        return $this->role == RoleEnum::User;
     }
 }

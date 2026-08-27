@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('menu_items', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('description')->nullable();
+            $table->json('name');
+            $table->json('description')->nullable();
             $table->string('image')->nullable();
             $table->float('price',2);
             $table->float('weight',3);
