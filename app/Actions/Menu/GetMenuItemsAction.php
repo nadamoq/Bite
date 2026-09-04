@@ -10,8 +10,11 @@ class GetMenuItemsAction
     /**
      * Execute the action to get categories and menu items formatted for frontend.
      */
-    public function execute(?string $search = null, ?string $categoryId = null): array
+    public function execute(?string $search = null, ?string $categoryId = null, ?string $locale = null): array
     {
+        $locale = in_array($locale, ['ar', 'en'], true) ? $locale : app()->getLocale();
+        app()->setLocale($locale);
+
         $categories = Category::active()
             ->select('id', 'title', 'slug')
             ->orderBy('id')

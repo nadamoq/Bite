@@ -166,6 +166,8 @@ class MenuItems extends Model
         ];
 
         $badge = $badgeType && isset($badgeStyles[$badgeType]) ? $badgeStyles[$badgeType] : null;
+        $nameTranslations = $this->translationsMap('name');
+        $descriptionTranslations = $this->translationsMap('description');
 
         $addonCategoriesData = [];
 
@@ -175,19 +177,27 @@ class MenuItems extends Model
                     ? $addonCat->activeAddons
                     : $addonCat->addons()->where('is_active', true)->get();
 
+                $categoryTranslations = method_exists($addonCat, 'translationsMap')
+                    ? $addonCat->translationsMap('name')
+                    : ['ar' => $addonCat->name, 'en' => $addonCat->name];
+
                 return [
                     'id' => $addonCat->id,
                     'name' => [
-                        'ar' => $addonCat->name,
-                        'en' => $addonCat->name,
+                        'ar' => $categoryTranslations['ar'] ?? '',
+                        'en' => $categoryTranslations['en'] ?? $categoryTranslations['ar'] ?? '',
                     ],
                     'is_multiple' => true,
                     'addons' => $addonsCollection->map(function ($addon) {
+                        $addonTranslations = method_exists($addon, 'translationsMap')
+                            ? $addon->translationsMap('name')
+                            : ['ar' => $addon->name, 'en' => $addon->name];
+
                         return [
                             'id' => $addon->id,
                             'name' => [
-                                'ar' => $addon->name,
-                                'en' => $addon->name,
+                                'ar' => $addonTranslations['ar'] ?? '',
+                                'en' => $addonTranslations['en'] ?? $addonTranslations['ar'] ?? '',
                             ],
                             'price' => (float) $addon->price,
                             'image' => $addon->image,
@@ -199,19 +209,27 @@ class MenuItems extends Model
             $grouped = $this->addons->groupBy('addon_category_id');
             foreach ($grouped as $catId => $addonsList) {
                 $categoryName = $addonsList->first()->category?->name ?? 'Addons';
+                $categoryTranslations = method_exists($addonsList->first()->category, 'translationsMap')
+                    ? $addonsList->first()->category->translationsMap('name')
+                    : ['ar' => $categoryName, 'en' => $categoryName];
+
                 $addonCategoriesData[] = [
                     'id' => $catId,
                     'name' => [
-                        'ar' => $categoryName,
-                        'en' => $categoryName,
+                        'ar' => $categoryTranslations['ar'] ?? '',
+                        'en' => $categoryTranslations['en'] ?? $categoryTranslations['ar'] ?? '',
                     ],
                     'is_multiple' => true,
                     'addons' => $addonsList->map(function ($addon) {
+                        $addonTranslations = method_exists($addon, 'translationsMap')
+                            ? $addon->translationsMap('name')
+                            : ['ar' => $addon->name, 'en' => $addon->name];
+
                         return [
                             'id' => $addon->id,
                             'name' => [
-                                'ar' => $addon->name,
-                                'en' => $addon->name,
+                                'ar' => $addonTranslations['ar'] ?? '',
+                                'en' => $addonTranslations['en'] ?? $addonTranslations['ar'] ?? '',
                             ],
                             'price' => (float) $addon->price,
                             'image' => $addon->image,
@@ -228,13 +246,13 @@ class MenuItems extends Model
             'price' => (float) $this->price,
             'image' => $this->imageUrl,
             'name' => [
-                'ar' => $this->name,
-                'en' => $this->name,
+                'ar' => $nameTranslations['ar'] ?? '',
+                'en' => $nameTranslations['en'] ?? $nameTranslations['ar'] ?? '',
             ],
-            'description' => $this->description,
+            'description' => $descriptionTranslations[app()->getLocale()] ?? $descriptionTranslations['en'] ?? $descriptionTranslations['ar'] ?? '',
             'desc' => [
-                'ar' => $this->description,
-                'en' => $this->description,
+                'ar' => $descriptionTranslations['ar'] ?? '',
+                'en' => $descriptionTranslations['en'] ?? $descriptionTranslations['ar'] ?? '',
             ],
             'rating' => '4.8',
             'badge' => $badge ? ['ar' => $badge['ar'], 'en' => $badge['en']] : null,

@@ -18,7 +18,7 @@ use Filament\Tables\Table;
 
 class AddonCategoryResource extends Resource
 {
-    use HydratesTranslatableAttributes;
+
     protected static ?string $model = AddonCategory::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;

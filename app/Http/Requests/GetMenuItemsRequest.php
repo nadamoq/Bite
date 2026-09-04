@@ -16,6 +16,7 @@ class GetMenuItemsRequest extends FormRequest
         return [
             'search' => 'nullable|string|max:100',
             'category_id' => 'nullable|string|max:50',
+            'lang' => 'nullable|string|in:ar,en',
         ];
     }
 }

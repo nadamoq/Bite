@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\ProvidesTranslationMap;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -11,6 +12,8 @@ use Spatie\Translatable\HasTranslations;
 class AddonCategory extends Model
 {
     use HasTranslations;
+    use ProvidesTranslationMap;
+
     protected $fillable = [
         'name',
         'description',

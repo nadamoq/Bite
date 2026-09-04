@@ -28,7 +28,6 @@ class StoreOrderRequest extends FormRequest
             'items' => 'required|array|min:1',
             'items.*.menuitem_id' => 'required|integer|exists:menu_items,id',
             'items.*.quantity' => 'required|integer|min:1|max:100',
-            'items.*.unit_price' => 'required|numeric|min:0',
             'items.*.special_instructions' => 'nullable|string|max:500',
             'items.*.addon_ids' => 'nullable|array',
             'items.*.addon_ids.*' => 'integer|exists:addons,id',

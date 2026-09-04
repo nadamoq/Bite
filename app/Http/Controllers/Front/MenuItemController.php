@@ -15,9 +15,12 @@ class MenuItemController extends Controller
      */
     public function index(GetMenuItemsRequest $request, GetMenuItemsAction $menuItemsAction): JsonResponse
     {
+        $lang = $request->validated('lang') ?? $request->header('Accept-Language');
+
         $result = $menuItemsAction->execute(
             search: $request->validated('search'),
-            categoryId: $request->validated('category_id')
+            categoryId: $request->validated('category_id'),
+            locale: $lang,
         );
 
         return response()->json([

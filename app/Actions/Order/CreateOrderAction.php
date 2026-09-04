@@ -2,9 +2,12 @@
 
 namespace App\Actions\Order;
 
+use App\Models\Addon;
+use App\Models\MenuItems;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 
 class CreateOrderAction
 {
@@ -17,61 +20,79 @@ class CreateOrderAction
      */
     public function execute(array $data, ?int $userId = null): Order
     {
-        return DB::transaction(function () use ($data, $userId) {
-            // 1. حساب السعر الإجمالي للأوردر
-            $totalPrice = collect($data['items'])->sum(function ($item) {
-                return (float) $item['quantity'] * (float) $item['unit_price'];
-            });
+       return DB::transaction(function () use ($data, $userId) {
 
-            // 2. إنشاء الطلب الأساسي
-            $order = Order::create([
-                'user_id' => $userId ?? 1,
-                'order_type' => $data['order_type'] ?? 'delivery',
-                'table_number' => $data['table_number'] ?? null,
-                'total_price' => $totalPrice,
-                'status' => 'pending',
-            ]);
+            $menuItemIds = collect($data['items'])->pluck('menuitem_id')->unique();
+            $menuItems = MenuItems::whereIn('id', $menuItemIds)->get()->keyBy('id');
 
-            // 3. تجميع العناصر مع مراعاة الـ Addons في المفتاح
+            $allAddonIds = collect($data['items'])->pluck('addon_ids')->flatten()->filter()->unique();
+            $addons = Addon::whereIn('id', $allAddonIds)->get()->keyBy('id');
+
             $groupedItems = [];
-            foreach ($data['items'] as $item) {
-                $addonIds = isset($item['addon_ids']) ? (array) $item['addon_ids'] : [];
-                sort($addonIds); // ترتيب الأرقام لضمان التطابق عند التجميع
+            $orderTotalPrice = 0;
 
-                $key = $item['menuitem_id'] . '_' . ($item['special_instructions'] ?? '') . '_' . implode(',', $addonIds);
+            // 2. تجميع العناصر مع حساب الأسعار المعتمدة
+            foreach ($data['items'] as $item) {
+                $menuitemId = (int) $item['menuitem_id'];
+                $menuItem = $menuItems->get($menuitemId);
+
+                if (!$menuItem) {
+                    throw new InvalidArgumentException("Menu item with ID {$menuitemId} not found.");
+                }
+
+                $addonIds = isset($item['addon_ids']) ? (array) $item['addon_ids'] : [];
+                sort($addonIds);
+                $basePrice = (float) $menuItem->price;
+                $addonsPrice = 0;
+                foreach ($addonIds as $addonId) {
+                    if ($addon = $addons->get($addonId)) {
+                        $addonsPrice += (float) $addon->price;
+                    }
+                }
+
+                $calculatedUnitPrice = $basePrice + $addonsPrice;
+                $quantity = (int) $item['quantity'];
+                $instructions = $item['special_instructions'] ?? null;
+
+                $key = $menuitemId . '_' . ($instructions ?? '') . '_' . implode(',', $addonIds);
 
                 if (isset($groupedItems[$key])) {
-                    $groupedItems[$key]['quantity'] += (int) $item['quantity'];
-                    $groupedItems[$key]['total_price'] += (float) $item['quantity'] * (float) $item['unit_price'];
+                    $groupedItems[$key]['quantity'] += $quantity;
                 } else {
                     $groupedItems[$key] = [
-                        'menuitem_id' => (int) $item['menuitem_id'],
-                        'quantity' => (int) $item['quantity'],
-                        'unit_price' => (float) $item['unit_price'],
-                        'total_price' => (float) $item['quantity'] * (float) $item['unit_price'],
-                        'special_instructions' => $item['special_instructions'] ?? null,
-                        'addon_ids' => $addonIds,
+                        'menuitem_id'          => $menuitemId, // مفتاح مضمون ونظيف
+                        'quantity'             => $quantity,
+                        'unit_price'           => $calculatedUnitPrice,
+                        'special_instructions' => $instructions,
+                        'addon_ids'            => $addonIds,
                     ];
                 }
+
+                $orderTotalPrice += ($calculatedUnitPrice * $quantity);
             }
 
-            // 4. حفظ عناصر الطلب وربط الـ Addons في جدول الربط
-           foreach ($groupedItems as $itemData) {
-    $addonIds = $itemData['addon_ids'];
+            // 3. إنشاء الأوردر الرئيسي
+            $order = Order::create([
+                'user_id'      => $userId ?? 1,
+                'order_type'   => $data['order_type'] ?? 'delivery',
+                'table_number' => $data['table_number'] ?? null,
+                'total_price'  => $orderTotalPrice,
+                'status'       => 'pending',
+            ]);
 
-    // إنشاء العنصر بتمرير الحقول المطلوبة لجدول order_items حصراً
-    $orderItem = $order->items()->create([
-        'menuitem_id'          => $itemData['menuitem_id'],
-        'quantity'             => $itemData['quantity'],
-        'unit_price'           => $itemData['unit_price'],
-        'special_instructions' => $itemData['special_instructions'],
-    ]);
+            // 4. إدخال العناصر وربط الـ Pivot Table للإضافات
+            foreach ($groupedItems as $itemData) {
+                $orderItem = $order->items()->create([
+                    'menuitem_id'          => $itemData['menuitem_id'],
+                    'quantity'             => $itemData['quantity'],
+                    'unit_price'           => $itemData['unit_price'],
+                    'special_instructions' => $itemData['special_instructions'],
+                ]);
 
-    // ربط الإضافات مع عنصر الطلب
-    if (!empty($addonIds) && method_exists($orderItem, 'addons')) {
-        $orderItem->addons()->sync($addonIds);
-    }
-}
+                if (!empty($itemData['addon_ids']) && method_exists($orderItem, 'addons')) {
+                    $orderItem->addons()->sync($itemData['addon_ids']);
+                }
+            }
 
             return $order->load(['items.menuItem', 'items.addons']);
         });

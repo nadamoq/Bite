@@ -330,6 +330,7 @@
         window.__INITIAL_SPICY_DISH = <?php echo json_encode($spicyDish ?? null, 15, 512) ?>;
         window.__INITIAL_SHOWCASE_DISHES = <?php echo json_encode($showcaseDishes ?? [], 15, 512) ?>;
         window.__INITIAL_LOCALE = '<?php echo e(app()->getLocale()); ?>';
+        window.__MENU_API_URL = <?php echo json_encode(route('menuitem.index'), 15, 512) ?>;
     </script>
 </head>
 
@@ -464,7 +465,7 @@
                                 </svg>
                             </span>
                         </button>
-                        
+
                     </div>
                 </div>
 
@@ -540,8 +541,7 @@
                                 class="group relative rounded-3xl overflow-hidden shadow-card-float border border-amber-glow/30 hover:border-amber-glow/60 transition-all duration-500 hover:-translate-y-2 cursor-pointer"
                                 @click="openCustomizer(dish)">
                                 <div class="aspect-[4/5] overflow-hidden">
-                                    <img :src="dish.image || ''"
-                                        :alt="dish.name[locale] || dish.name"
+                                    <img :src="dish.image || ''" :alt="dish.name[locale] || dish.name"
                                         class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 sizzle-effect">
                                 </div>
                                 <div
@@ -569,8 +569,8 @@
                                             @click.stop="quickAdd(dish, $event)">
                                             <svg class="w-6 h-6" fill="none" stroke="currentColor"
                                                 viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                                    d="M12 4v16m8-8H4" />
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    stroke-width="2.5" d="M12 4v16m8-8H4" />
                                             </svg>
                                         </button>
                                     </div>
@@ -580,7 +580,7 @@
                     </template>
                 </div>
 
-                
+
             </div>
         </section>
 
@@ -628,7 +628,7 @@
                 </div>
 
                 <!-- Menu Items Grid -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div x-show="filteredMenu.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     <template x-for="item in filteredMenu" :key="item.id">
                         <article
                             class="food-card group relative rounded-2xl bg-charcoal-800/60 border border-white/5 overflow-hidden hover:border-amber-glow/25 hover:shadow-food-depth transition-all duration-500 cursor-pointer"
@@ -684,6 +684,12 @@
                             </div>
                         </article>
                     </template>
+                </div>
+
+                <div x-show="filteredMenu.length === 0"
+                    class="mt-6 rounded-2xl border border-dashed border-white/10 bg-charcoal-800/40 px-6 py-12 text-center">
+                    <p class="text-lg font-semibold text-white/80"
+                       x-text="locale === 'ar' ? 'لا توجد وجبات' : 'No meals exists'"></p>
                 </div>
             </div>
         </section>
@@ -751,21 +757,27 @@
 
                             <!-- Addons Grouped -->
                             <div class="space-y-6 mb-6">
-                                <template x-for="addonCategory in (selectedItem?.addon_categories || defaultAddonCategories)" :key="addonCategory.id">
+                                <template
+                                    x-for="addonCategory in (selectedItem?.addon_categories || defaultAddonCategories)"
+                                    :key="addonCategory.id">
                                     <div class="space-y-3">
                                         <h4 class="text-sm font-semibold text-amber-warm/80 uppercase tracking-wide"
                                             x-text="addonCategory.name[locale] || addonCategory.name"></h4>
                                         <div class="space-y-2">
                                             <template x-for="addon in addonCategory.addons" :key="addon.id">
-                                                <label class="flex items-center justify-between p-3.5 rounded-xl bg-charcoal-900/60 border border-white/5 hover:border-amber-glow/20 cursor-pointer transition-all"
-                                                       :class="selectedAddons.includes(addon.id) ? 'border-amber-glow/40 bg-amber-glow/5' : ''">
+                                                <label
+                                                    class="flex items-center justify-between p-3.5 rounded-xl bg-charcoal-900/60 border border-white/5 hover:border-amber-glow/20 cursor-pointer transition-all"
+                                                    :class="selectedAddons.includes(addon.id) ?
+                                                        'border-amber-glow/40 bg-amber-glow/5' : ''">
                                                     <div class="flex items-center gap-3.5">
                                                         <img :src="addon.image"
                                                             :alt="addon.name[locale] || addon.name"
                                                             class="w-12 h-12 rounded-lg object-cover">
                                                         <div>
-                                                            <span class="font-semibold text-sm" x-text="addon.name[locale] || addon.name"></span>
-                                                            <span class="block text-amber-warm/70 text-xs mt-0.5" x-text="'+' + '$' + addon.price.toFixed(2)"></span>
+                                                            <span class="font-semibold text-sm"
+                                                                x-text="addon.name[locale] || addon.name"></span>
+                                                            <span class="block text-amber-warm/70 text-xs mt-0.5"
+                                                                x-text="'+' + '$' + addon.price.toFixed(2)"></span>
                                                         </div>
                                                     </div>
                                                     <input type="checkbox" :value="addon.id"
@@ -779,24 +791,7 @@
                                 </template>
                             </div>
 
-                            <!-- Cheese Pull Switch -->
-                            <div
-                                class="flex items-center justify-between p-4 rounded-xl bg-charcoal-900/60 border border-white/5 mb-6">
-                                <div class="flex items-center gap-3">
-                                    <span class="text-2xl">🧀</span>
-                                    <div>
-                                        <span class="font-semibold text-sm" x-text="t('modal.cheesePull')"></span>
-                                        <span class="block text-white/40 text-xs"
-                                            x-text="t('modal.cheesePullDesc')"></span>
-                                    </div>
-                                </div>
-                                <button @click="cheesePull = !cheesePull"
-                                    class="relative w-12 h-7 rounded-full transition-colors cursor-pointer"
-                                    :class="cheesePull ? 'bg-amber-glow' : 'bg-charcoal-700'">
-                                    <span class="absolute top-0.5 w-6 h-6 rounded-full bg-white shadow transition-all"
-                                        :class="cheesePull ? 'start-5' : 'start-0.5'"></span>
-                                </button>
-                            </div>
+                           
                         </div>
 
                         <!-- Quantity and Submit -->
@@ -1000,10 +995,10 @@
          SERVER STATE INJECTION
     ═══════════════════════════════════════════════════════════════ -->
     <script>
-       window.__MENU_PAGE_TRANSLATIONS = {
-        ar: <?php echo json_encode(__('menu_page', [], 'ar')) ?>,
-        en: <?php echo json_encode(__('menu_page', [], 'en')) ?>
-    };
+        window.__MENU_PAGE_TRANSLATIONS = {
+            ar: <?php echo json_encode(__('menu_page', [], 'ar')) ?>,
+            en: <?php echo json_encode(__('menu_page', [], 'en')) ?>
+        };
         window.__INITIAL_FEATURED_DISH = <?php echo json_encode($featuredDish ?? null, 15, 512) ?>;
         window.__INITIAL_FAMILY_DISH = <?php echo json_encode($familyDish ?? null, 15, 512) ?>;
         window.__INITIAL_SPICY_DISH = <?php echo json_encode($spicyDish ?? null, 15, 512) ?>;
@@ -1029,7 +1024,7 @@
                 activeCategory: 'all',
                 selectedItem: null,
                 selectedAddons: [],
-                cheesePull: false,
+            
                 modalQty: 1,
                 customizerZoom: false,
                 promoCode: '',
@@ -1056,79 +1051,204 @@
                 ].filter(Boolean),
                 showcaseDishes: window.__INITIAL_SHOWCASE_DISHES || [],
 
-           categories: (window.__INITIAL_CATEGORIES && window.__INITIAL_CATEGORIES.length > 0)
-            ? [
-                { id: 'all', label: { ar: 'الكل', en: 'All' } },
-                ...window.__INITIAL_CATEGORIES.map(c => ({
-                    id: c.slug || c.id,
-                    label: { 
-                        ar: c.title_ar || c.title || c.name, 
-                        en: c.title_en || c.title || c.name 
-                    }
-                }))
-              ]
-            : [
-                { id: 'all', label: { ar: 'الكل', en: 'All' } },
-                { id: 'burgers', label: { ar: 'برجر', en: 'Burgers' } },
-                { id: 'pizza', label: { ar: 'بيتزا', en: 'Pizza' } },
-                { id: 'grills', label: { ar: 'مشويات', en: 'Grills' } },
-                { id: 'sides', label: { ar: 'مقبلات وجوانب', en: 'Sides & Elevates' } },
-            ],
+                categories: (window.__INITIAL_CATEGORIES && window.__INITIAL_CATEGORIES.length > 0) ?
+                    [{
+                            id: 'all',
+                            label: {
+                                ar: 'الكل',
+                                en: 'All'
+                            }
+                        },
+                        ...window.__INITIAL_CATEGORIES.map(c => ({
+                            id: c.slug || c.id,
+                            label: {
+                                ar: c.title_ar || c.title || c.name,
+                                en: c.title_en || c.title || c.name
+                            }
+                        }))
+                    ] :
+                    [{
+                            id: 'all',
+                            label: {
+                                ar: 'الكل',
+                                en: 'All'
+                            }
+                        },
+                        {
+                            id: 'burgers',
+                            label: {
+                                ar: 'برجر',
+                                en: 'Burgers'
+                            }
+                        },
+                        {
+                            id: 'pizza',
+                            label: {
+                                ar: 'بيتزا',
+                                en: 'Pizza'
+                            }
+                        },
+                        {
+                            id: 'grills',
+                            label: {
+                                ar: 'مشويات',
+                                en: 'Grills'
+                            }
+                        },
+                        {
+                            id: 'sides',
+                            label: {
+                                ar: 'مقبلات وجوانب',
+                                en: 'Sides & Elevates'
+                            }
+                        },
+                    ],
 
-        async fetchMenuItems() {
-            try {
-                const response = await fetch('menuitems');
-                if (response.ok) {
-                    const data = await response.json();
-                    
-                    
-                    const items = data.items || data.data || (Array.isArray(data) ? data : null);
-                    
-                    if (items && Array.isArray(items)) {
-                        this.allMenuItems = items;
-                        
-                        const incomingCategories = data.categories || [];
-                        if (incomingCategories.length > 0) {
-                            const cats = [{ id: 'all', label: { ar: 'الكل', en: 'All' } }];
-                            incomingCategories.forEach(c => {
-                                cats.push({
-                                    id: c.slug || c.id,
-                                    label: { 
-                                        ar: typeof c.name === 'object' ? (c.name.ar || c.name.en) : (c.title || c.name), 
-                                        en: typeof c.name === 'object' ? (c.name.en || c.name.ar) : (c.title || c.name) 
+                async fetchMenuItems() {
+                    try {
+                        const currentLang = this.locale;
+                        const response = await fetch(`/menu-items?lang=${currentLang}`, {
+                                            headers: {
+                                                'Accept-Language': currentLang,
+                                                'Content-Type': 'application/json'
+                                            }
+                                        });
+                        if (response.ok) {
+                            const data = await response.json();
+
+
+                            const items = data.items || data.data || (Array.isArray(data) ? data : null);
+
+                            if (items && Array.isArray(items)) {
+                                this.allMenuItems = items;
+
+                                const incomingCategories = data.categories || [];
+                                if (incomingCategories.length > 0) {
+                                    const cats = [{
+                                        id: 'all',
+                                        label: {
+                                            ar: 'الكل',
+                                            en: 'All'
+                                        }
+                                    }];
+                                    incomingCategories.forEach(c => {
+                                        cats.push({
+                                            id: c.slug || c.id,
+                                            label: {
+                                                ar: typeof c.name === 'object' ? (c.name.ar || c.name
+                                                    .en) : (c.title || c.name),
+                                                en: typeof c.name === 'object' ? (c.name.en || c.name
+                                                    .ar) : (c.title || c.name)
+                                            }
+                                        });
+                                    });
+                                    this.categories = cats;
+                                }
+
+                                // Update spotlight/featured dishes dynamically
+                                if (this.featuredDish) {
+                                    this.featuredDish = this.allMenuItems.find(i => i.id === this.featuredDish.id) || this.featuredDish;
+                                }
+                                if (this.familyDish) {
+                                    this.familyDish = this.allMenuItems.find(i => i.id === this.familyDish.id) || this.familyDish;
+                                }
+                                if (this.spicyDish) {
+                                    this.spicyDish = this.allMenuItems.find(i => i.id === this.spicyDish.id) || this.spicyDish;
+                                }
+                                this.spotlightDishes = [this.featuredDish, this.familyDish, this.spicyDish].filter(Boolean);
+                                
+                                if (this.showcaseDishes && this.showcaseDishes.length > 0) {
+                                    this.showcaseDishes = this.showcaseDishes.map(d => this.allMenuItems.find(i => i.id === d.id) || d);
+                                }
+
+                                // Update cart items names
+                                this.cart = this.cart.map(cartItem => {
+                                    const updatedItem = this.allMenuItems.find(i => i.id === cartItem.id);
+                                    if (updatedItem) {
+                                        cartItem.name = updatedItem.name;
                                     }
+                                    return cartItem;
                                 });
-                            });
-                            this.categories = cats;
-                        }
-                        return;
-                    }
-                }
-            } catch (e) {
-                console.log('API fallback initialized', e);
-            }
 
-            // Fallback items ...
-        },
+                                return;
+                            }
+                        }
+                    } catch (e) {
+                        console.log('API fallback initialized', e);
+                    }
+
+                    // Fallback items ...
+                },
 
                 // Fallback default addon categories
-                defaultAddonCategories: [
-                    {
+                defaultAddonCategories: [{
                         id: 1,
-                        name: { ar: 'صلصات فاخرة', en: 'Gourmet Sauces' },
-                        addons: [
-                            { id: 1, name: { ar: 'صوص باربكيو مدخن', en: 'Smoky BBQ Sauce' }, price: 1.50, image: 'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=200&q=80' },
-                            { id: 2, name: { ar: 'ثومية مع أعشاب برية', en: 'Garlic Herb Aioli' }, price: 1.50, image: 'https://images.unsplash.com/photo-1472476443507-c7a5948772fc?w=200&q=80' },
-                            { id: 3, name: { ar: 'مايونيز الكمأة السوداء', en: 'Black Truffle Mayo' }, price: 2.50, image: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=200&q=80' },
+                        name: {
+                            ar: 'صلصات فاخرة',
+                            en: 'Gourmet Sauces'
+                        },
+                        addons: [{
+                                id: 1,
+                                name: {
+                                    ar: 'صوص باربكيو مدخن',
+                                    en: 'Smoky BBQ Sauce'
+                                },
+                                price: 1.50,
+                                image: 'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=200&q=80'
+                            },
+                            {
+                                id: 2,
+                                name: {
+                                    ar: 'ثومية مع أعشاب برية',
+                                    en: 'Garlic Herb Aioli'
+                                },
+                                price: 1.50,
+                                image: 'https://images.unsplash.com/photo-1472476443507-c7a5948772fc?w=200&q=80'
+                            },
+                            {
+                                id: 3,
+                                name: {
+                                    ar: 'مايونيز الكمأة السوداء',
+                                    en: 'Black Truffle Mayo'
+                                },
+                                price: 2.50,
+                                image: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=200&q=80'
+                            },
                         ]
                     },
                     {
                         id: 2,
-                        name: { ar: 'إضافات مقرمشة', en: 'Premium Toppings' },
-                        addons: [
-                            { id: 4, name: { ar: 'بيكون بقري مقرمش', en: 'Crispy Beef Bacon' }, price: 2.50, image: 'https://images.unsplash.com/photo-1528607929212-2636ec44253e?w=200&q=80' },
-                            { id: 5, name: { ar: 'هالبينو مشوي حار', en: 'Grilled Jalapeños' }, price: 1.25, image: 'https://images.unsplash.com/photo-1568901346715-366b9e2d4f4d?w=200&q=80' },
-                            { id: 6, name: { ar: 'بصل مكرمل متبل', en: 'Caramelized Onions' }, price: 1.50, image: 'https://images.unsplash.com/photo-1550547660-d9450f859349?w=200&q=80' },
+                        name: {
+                            ar: 'إضافات مقرمشة',
+                            en: 'Premium Toppings'
+                        },
+                        addons: [{
+                                id: 4,
+                                name: {
+                                    ar: 'بيكون بقري مقرمش',
+                                    en: 'Crispy Beef Bacon'
+                                },
+                                price: 2.50,
+                                image: 'https://images.unsplash.com/photo-1528607929212-2636ec44253e?w=200&q=80'
+                            },
+                            {
+                                id: 5,
+                                name: {
+                                    ar: 'هالبينو مشوي حار',
+                                    en: 'Grilled Jalapeños'
+                                },
+                                price: 1.25,
+                                image: 'https://images.unsplash.com/photo-1568901346715-366b9e2d4f4d?w=200&q=80'
+                            },
+                            {
+                                id: 6,
+                                name: {
+                                    ar: 'بصل مكرمل متبل',
+                                    en: 'Caramelized Onions'
+                                },
+                                price: 1.50,
+                                image: 'https://images.unsplash.com/photo-1550547660-d9450f859349?w=200&q=80'
+                            },
                         ]
                     }
                 ],
@@ -1153,11 +1273,6 @@
                         en: 'Crispy & Hot',
                         class: 'bg-crimson-cta/30 text-crimson-hot backdrop-blur-md'
                     },
-                    'extra-cheese': {
-                        ar: 'جبنة إضافية',
-                        en: 'Extra Cheese',
-                        class: 'bg-amber-glow/30 text-amber-warm backdrop-blur-md'
-                    },
                 },
 
                 // Translation lookup helper
@@ -1178,6 +1293,8 @@
                     this.locale = this.locale === 'ar' ? 'en' : 'ar';
                     document.documentElement.dir = this.locale === 'ar' ? 'rtl' : 'ltr';
                     document.documentElement.lang = this.locale;
+                    localStorage.setItem('locale', this.locale);
+                    this.fetchMenuItems();
                 },
 
                 init() {
@@ -1186,6 +1303,7 @@
                     }
                     this.initAnimations();
                 },
+                
 
 
                 get filteredMenu() {
@@ -1222,7 +1340,7 @@
                 openCustomizer(item) {
                     this.selectedItem = item;
                     this.selectedAddons = [];
-                    this.cheesePull = false;
+                
                     this.modalQty = 1;
                     this.modalOpen = true;
                 },
@@ -1239,9 +1357,9 @@
                 get modalTotal() {
                     if (!this.selectedItem) return 0;
                     let total = parseFloat(this.selectedItem.price) || 0;
-                    const cats = (this.selectedItem.addon_categories && this.selectedItem.addon_categories.length > 0)
-                        ? this.selectedItem.addon_categories
-                        : this.defaultAddonCategories;
+                    const cats = (this.selectedItem.addon_categories && this.selectedItem.addon_categories.length > 0) ?
+                        this.selectedItem.addon_categories :
+                        this.defaultAddonCategories;
                     cats.forEach(c => {
                         (c.addons || []).forEach(a => {
                             if (this.selectedAddons.includes(a.id)) {
@@ -1249,7 +1367,7 @@
                             }
                         });
                     });
-                    if (this.cheesePull) total += 2.00;
+                  
                     return total * this.modalQty;
                 },
 
@@ -1257,9 +1375,9 @@
                     if (!this.selectedItem) return;
                     let unitPrice = parseFloat(this.selectedItem.price) || 0;
                     let customNames = [];
-                    const cats = (this.selectedItem.addon_categories && this.selectedItem.addon_categories.length > 0)
-                        ? this.selectedItem.addon_categories
-                        : this.defaultAddonCategories;
+                    const cats = (this.selectedItem.addon_categories && this.selectedItem.addon_categories.length > 0) ?
+                        this.selectedItem.addon_categories :
+                        this.defaultAddonCategories;
                     cats.forEach(c => {
                         (c.addons || []).forEach(a => {
                             if (this.selectedAddons.includes(a.id)) {
@@ -1268,13 +1386,9 @@
                             }
                         });
                     });
-                    if (this.cheesePull) {
-                        unitPrice += 2.00;
-                        customNames.push(this.t('modal.cheesePull'));
-                    }
+                  
 
-                    const cartId = this.selectedItem.id + '_' + this.selectedAddons.sort().join('-') + (this.cheesePull ?
-                        '_cp' : '');
+                    const cartId = this.selectedItem.id + '_' + this.selectedAddons.sort().join('-') ;
                     const existing = this.cart.find(i => i.cartId === cartId);
                     if (existing) {
                         existing.quantity += this.modalQty;
@@ -1356,7 +1470,6 @@
                         this.showToast(this.t('cart.promoInvalid'), '⚠️');
                     }
                 },
-
                 async checkout() {
                     if (this.cart.length === 0) return;
                     this.isSubmittingOrder = true;
@@ -1367,13 +1480,11 @@
                         items: this.cart.map(item => ({
                             menuitem_id: item.id,
                             quantity: item.quantity,
-                            unit_price: item.price,
                             special_instructions: item.special_instructions || null,
                             addon_ids: Array.isArray(item.addon_ids) ?
                                 item.addon_ids.map(id => parseInt(typeof id === 'object' ? id.id :
-                                id)) :
-                                (item.selectedAddons ? item.selectedAddons.map(a => parseInt(a.id)) :
-                                [])
+                                id)) : (item.selectedAddons ? item.selectedAddons.map(a => parseInt(a
+                                    .id)) : [])
                         }))
                     };
 
@@ -1384,7 +1495,6 @@
                             headers: {
                                 'Content-Type': 'application/json',
                                 'Accept': 'application/json',
-                                
                                 ...(csrfToken ? {
                                     'X-CSRF-TOKEN': csrfToken
                                 } : {})
@@ -1404,20 +1514,73 @@
                             throw new Error('Server returned ' + res.status);
                         }
                     } catch (err) {
-                        // Prototype fallback confirmation
-                        this.lastOrder = {
-                            order_number: 'ORD-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
-                            total_price: this.cartFinalTotal,
-                            status: 'pending'
-                        };
-                        this.cart = [];
-                        this.cartOpen = false;
-                        this.receiptOpen = true;
-                        this.showToast(this.t('toast.order_success') + ' ' + this.lastOrder.order_number, '🎉');
+                        console.error('Order Submission Failed:', err);
+                        this.showToast(this.t('toast.order_error') || 'حدث خطأ أثناء تنفيذ الطلب', '⚠️');
                     } finally {
                         this.isSubmittingOrder = false;
                     }
                 },
+                // async checkout() {
+                //     if (this.cart.length === 0) return;
+                //     this.isSubmittingOrder = true;
+
+                //     const payload = {
+                //         order_type: 'delivery',
+                //         promo_code: this.promoApplied ? 'CRAVE10' : null,
+                //         items: this.cart.map(item => ({
+                //             menuitem_id: item.id,
+                //             quantity: item.quantity,
+                //             unit_price: item.price,
+                //             special_instructions: item.special_instructions || null,
+                //             addon_ids: Array.isArray(item.addon_ids) ?
+                //                 item.addon_ids.map(id => parseInt(typeof id === 'object' ? id.id :
+                //                 id)) :
+                //                 (item.selectedAddons ? item.selectedAddons.map(a => parseInt(a.id)) :
+                //                 [])
+                //         }))
+                //     };
+
+                //     try {
+                //         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+                //         const res = await fetch('order', {
+                //             method: 'POST',
+                //             headers: {
+                //                 'Content-Type': 'application/json',
+                //                 'Accept': 'application/json',
+
+                //                 ...(csrfToken ? {
+                //                     'X-CSRF-TOKEN': csrfToken
+                //                 } : {})
+                //             },
+                //             body: JSON.stringify(payload)
+                //         });
+
+                //         if (res.ok) {
+                //             const result = await res.json();
+                //             this.lastOrder = result.data;
+                //             this.cart = [];
+                //             this.cartOpen = false;
+                //             this.receiptOpen = true;
+                //             this.showToast(this.t('toast.order_success') + ' ' + (this.lastOrder.order_number ||
+                //                 'CRAVE'), '🎉');
+                //         } else {
+                //             throw new Error('Server returned ' + res.status);
+                //         }
+                //     } catch (err) {
+                //         // Prototype fallback confirmation
+                //         this.lastOrder = {
+                //             order_number: 'ORD-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
+                //             total_price: this.cartFinalTotal,
+                //             status: 'pending'
+                //         };
+                //         this.cart = [];
+                //         this.cartOpen = false;
+                //         this.receiptOpen = true;
+                //         this.showToast(this.t('toast.order_success') + ' ' + this.lastOrder.order_number, '🎉');
+                //     } finally {
+                //         this.isSubmittingOrder = false;
+                //     }
+                // },
 
                 showToast(message, icon = '🔥') {
                     this.toast = {

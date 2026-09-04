@@ -9,10 +9,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Spatie\Translatable\HasTranslations;
-
+use App\Models\Concerns\ProvidesTranslationMap;
 class Addon extends Model
 {
     use HasTranslations;
+    use ProvidesTranslationMap;
 
     public array $translatable = ['name', 'description'];
 

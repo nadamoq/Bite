@@ -60,27 +60,25 @@ class OrdersResource extends Resource
         ];
     }
     public static function updateTotalPrice(Get $get, Set $set): void
-{
-    // جلب العناصر بسلسلة المسار الصحيحة للـ Repeater
-    $items = $get('items') ?? $get('../../items') ?? [];
-    $total = 0;
+    {
+        $items = $get('items') ?? $get('../../items') ?? [];
+        $total = 0;
 
-    foreach ($items as $item) {
-        $quantity = (int) ($item['quantity'] ?? 1);
-        $unitPrice = (float) ($item['unit_price'] ?? 0);
-        
-        $addonsPrice = 0;
-        if (!empty($item['addons'])) {
-            $addonsPrice = Addon::whereIn('id', $item['addons'])->sum('price');
+        foreach ($items as $item) {
+            $quantity = (int) ($item['quantity'] ?? 1);
+            $unitPrice = (float) ($item['unit_price'] ?? 0);
+
+            $addonsPrice = 0;
+            if (!empty($item['addons'])) {
+                $addonsPrice = Addon::whereIn('id', $item['addons'])->sum('price');
+            }
+
+            $total += ($unitPrice + $addonsPrice) * $quantity;
         }
 
-        $total += ($unitPrice + $addonsPrice) * $quantity;
+        $set('total_price', $total);
+        $set('../../total_price', $total);
     }
-
-    // تحديث الإجمالي في المستوى الأعلى للنموذج
-    $set('total_price', $total);
-    $set('../../total_price', $total);
-}
     public static function getNavigationLabel(): string
     {
         return __('navigation.orders');
@@ -88,7 +86,8 @@ class OrdersResource extends Resource
     public static function getPluralModelLabel(): string
     {
         return __('navigation.orders');
-    }public static function getModelLabel(): string
+    }
+    public static function getModelLabel(): string
     {
         return __('navigation.order');
     }
