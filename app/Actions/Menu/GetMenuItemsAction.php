@@ -18,7 +18,26 @@ class GetMenuItemsAction
         $categories = Category::active()
             ->select('id', 'title', 'slug')
             ->orderBy('id')
-            ->get();
+            ->get()
+            ->map(function ($category) {
+                $rawTitle = $category->title ?? $category->name ?? '';
+                $title = is_array($rawTitle) ? $rawTitle : ['ar' => $rawTitle, 'en' => $rawTitle];
+
+                $name = $title['ar'] ?? $title['en'] ?? (string) $rawTitle;
+
+                return [
+                    'id' => (int) $category->id,
+                    'slug' => $category->slug,
+                    'title' => $name,
+                    'name' => $name,
+                    'label' => [
+                        'ar' => $title['ar'] ?? $name,
+                        'en' => $title['en'] ?? $name,
+                    ],
+                ];
+            })
+            ->values()
+            ->all();
 
         $menuitems = MenuItems::active()
             ->search($search)
@@ -34,7 +53,7 @@ class GetMenuItemsAction
             'items' => $menuitems->values()->toArray(),
             'meta' => [
                 'total_items' => $menuitems->count(),
-                'total_categories' => $categories->count(),
+                'total_categories' => count($categories),
                 'timestamp' => now()->toIso8601String(),
             ],
         ];

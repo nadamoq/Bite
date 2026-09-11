@@ -26,6 +26,27 @@ class MenuItemController extends Controller
         return response()->json([
             'success' => true,
             ...$result,
+            'categories' => collect($result['categories'] ?? [])
+                ->map(function ($category) {
+                    $title = is_array($category['title'] ?? null)
+                        ? ($category['title'] ?? [])
+                        : ['ar' => $category['title'] ?? $category['name'] ?? '', 'en' => $category['title'] ?? $category['name'] ?? ''];
+
+                    $name = $category['name'] ?? $category['title'] ?? (string) ($title['ar'] ?? $title['en'] ?? '');
+
+                    return [
+                        'id' => $category['id'] ?? null,
+                        'slug' => $category['slug'] ?? null,
+                        'name' => $name,
+                        'title' => $name,
+                        'label' => [
+                            'ar' => $category['label']['ar'] ?? $title['ar'] ?? $name,
+                            'en' => $category['label']['en'] ?? $title['en'] ?? $name,
+                        ],
+                    ];
+                })
+                ->values()
+                ->all(),
         ]);
     }
 }

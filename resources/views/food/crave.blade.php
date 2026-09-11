@@ -6,8 +6,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="description" content="Crave Kitchen — {{ __('menu_page.hero.title2') }}. Order hot, delivered fast.">
-    <title>Crave Kitchen | {{ __('menu_page.hero.title2') }}</title>
+    <meta name="description" content="Bite — {{ __('menu_page.hero.title2') }}. Order hot, delivered fast.">
+    <title>Bite  | {{ __('menu_page.hero.title2') }}</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -351,7 +351,7 @@
                     </svg>
                 </div>
                 <span class="font-display text-2xl font-black tracking-tight">
-                    <span class="text-amber-warm">Crave</span><span class="text-white/90">Kitchen</span>
+                    <span class="text-amber-warm">Bite</span><span class="text-white/90"></span>
                 </span>
             </a>
 
@@ -615,12 +615,12 @@
 
                         <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide max-w-full">
                             <template x-for="cat in categories" :key="cat.id">
-                                <button @click="selectCategory(cat.id)"
+                                <button :value="cat.id" @click="selectCategory(cat.id)"
                                     class="flex-shrink-0 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-300 border cursor-pointer"
                                     :class="activeCategory === cat.id ?
                                         'bg-amber-glow/15 border-amber-glow/40 text-amber-warm shadow-glow-amber' :
                                         'bg-charcoal-800 border-white/5 text-white/50 hover:border-amber-glow/20 hover:text-white/80'"
-                                    x-text="cat.label ? cat.label[locale] : (cat.title || cat.name)">
+                                    x-text="cat.label ? (cat.label[locale] || cat.label.ar || cat.label.en || cat.name || '') : (cat.name || '')">
                                 </button>
                             </template>
                         </div>
@@ -769,21 +769,16 @@
                                                     class="flex items-center justify-between p-3.5 rounded-xl bg-charcoal-900/60 border border-white/5 hover:border-amber-glow/20 cursor-pointer transition-all"
                                                     :class="selectedAddons.includes(addon.id) ?
                                                         'border-amber-glow/40 bg-amber-glow/5' : ''">
-                                                    <div class="flex items-center gap-3.5">
-                                                        <img :src="addon.image"
-                                                            :alt="addon.name[locale] || addon.name"
-                                                            class="w-12 h-12 rounded-lg object-cover">
-                                                        <div>
-                                                            <span class="font-semibold text-sm"
-                                                                x-text="addon.name[locale] || addon.name"></span>
-                                                            <span class="block text-amber-warm/70 text-xs mt-0.5"
-                                                                x-text="'+' + '$' + addon.price.toFixed(2)"></span>
-                                                        </div>
+                                                    <div class="flex-1 min-w-0">
+                                                        <span class="block font-semibold text-sm"
+                                                            x-text="addon.name[locale] || addon.name"></span>
+                                                        <span class="block text-amber-warm/70 text-xs mt-0.5"
+                                                            x-text="'+' + '$' + addon.price.toFixed(2)"></span>
                                                     </div>
                                                     <input type="checkbox" :value="addon.id"
                                                         @change="toggleAddon(addon.id)"
                                                         :checked="selectedAddons.includes(addon.id)"
-                                                        class="w-5 h-5 rounded accent-amber-glow cursor-pointer">
+                                                        class="w-5 h-5 rounded accent-amber-glow cursor-pointer ml-4 flex-shrink-0">
                                                 </label>
                                             </template>
                                         </div>
@@ -1059,13 +1054,21 @@
                                 en: 'All'
                             }
                         },
-                        ...window.__INITIAL_CATEGORIES.map(c => ({
-                            id: c.slug || c.id,
-                            label: {
-                                ar: c.title_ar || c.title || c.name,
-                                en: c.title_en || c.title || c.name
-                            }
-                        }))
+                        ...window.__INITIAL_CATEGORIES.map(c => {
+                            const categoryName = typeof c.name === 'object' ? (c.name?.ar ?? c.name?.en ?? '') : (c.name || c.title || '');
+                            const categoryLabel = c.label || {
+                                ar: c.title?.ar ?? c.title ?? categoryName,
+                                en: c.title?.en ?? c.title ?? categoryName,
+                            };
+
+                            return {
+                                id: String(c.id ?? c.slug ?? 'all'),
+                                label: {
+                                    ar: categoryLabel.ar || categoryName,
+                                    en: categoryLabel.en || categoryName,
+                                }
+                            };
+                        })
                     ] :
                     [{
                             id: 'all',
@@ -1132,13 +1135,17 @@
                                         }
                                     }];
                                     incomingCategories.forEach(c => {
+                                        const categoryName = typeof c.name === 'object' ? (c.name?.ar ?? c.name?.en ?? '') : (c.name || c.title || '');
+                                        const categoryLabel = c.label || {
+                                            ar: c.title?.ar ?? c.title ?? categoryName,
+                                            en: c.title?.en ?? c.title ?? categoryName,
+                                        };
+
                                         cats.push({
-                                            id: c.slug || c.id,
+                                            id: String(c.id ?? c.slug ?? 'all'),
                                             label: {
-                                                ar: typeof c.name === 'object' ? (c.name.ar || c.name
-                                                    .en) : (c.title || c.name),
-                                                en: typeof c.name === 'object' ? (c.name.en || c.name
-                                                    .ar) : (c.title || c.name)
+                                                ar: categoryLabel.ar || categoryName,
+                                                en: categoryLabel.en || categoryName
                                             }
                                         });
                                     });
@@ -1411,7 +1418,7 @@
                 },
 
                 quickAdd(item, event) {
-                    if (event) this.triggerFlyToCart(event, item.image);
+                                       if (event) this.triggerFlyToCart(event, item.image);
                     const cartId = item.id + '_default';
                     const existing = this.cart.find(i => i.cartId === cartId);
                     if (existing) {
